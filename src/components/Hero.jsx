@@ -106,10 +106,12 @@ const Hero = ({ setActiveSection }) => {
     const circleWidth = 360;
     
     // Rayon du cercle adapté à la taille de l'écran
-    const radius = Math.min(windowSize.width, windowSize.height) * 0.65;
+    // Réduire le rayon sur mobile pour que le cercle soit plus visible
+    const isMobile = windowSize.width < 768;
+    const radius = Math.min(windowSize.width, windowSize.height) * (isMobile ? 0.4 : 0.65);
     
-    // Taille fixe pour toutes les images
-    const fixedScale = 1.0;
+    // Taille fixe pour toutes les images, plus petite sur mobile
+    const fixedScale = isMobile ? 0.7 : 1.0;
     
     // Espacement minimal entre les images (en degrés)
     const minAngleBetweenImages = 360 / (count * 1.5);
@@ -167,7 +169,12 @@ const Hero = ({ setActiveSection }) => {
         <motion.div 
           className="absolute bottom-0 left-1/2 transform -translate-x-1/2"
           animate={controls}
-          style={{ originY: 0, originX: 0.5 }} // Point d'origine au bas du cercle
+          style={{ 
+            originY: 0, 
+            originX: 0.5,
+            // Ajuster la position du cercle sur mobile
+            bottom: windowSize.width < 768 ? '15%' : '0'
+          }}
         >
           {images.map((image, index) => (
             <motion.div
@@ -179,8 +186,9 @@ const Hero = ({ setActiveSection }) => {
                 transition: { duration: 0.8, delay: index * 0.05 }
               }}
               style={{
-                width: `${Math.min(250, windowSize.width * 0.2)}px`, // Taille fixe pour toutes les images
-                height: `${Math.min(350, windowSize.width * 0.25)}px`, // Taille fixe pour toutes les images
+                // Taille plus petite sur mobile
+                width: `${Math.min(windowSize.width < 768 ? 150 : 250, windowSize.width * (windowSize.width < 768 ? 0.15 : 0.2))}px`,
+                height: `${Math.min(windowSize.width < 768 ? 200 : 350, windowSize.width * (windowSize.width < 768 ? 0.2 : 0.25))}px`,
                 left: positions[index]?.x || 0,
                 top: positions[index]?.y || 0,
                 transform: `translate(-50%, -50%) rotate(${positions[index]?.rotation || 0}deg)`,
@@ -203,14 +211,17 @@ const Hero = ({ setActiveSection }) => {
         
         {/* Bouton pour accéder à la galerie */}
         <motion.div 
-          className="absolute bottom-32 z-50"
+          className="absolute z-50"
+          style={{
+            bottom: windowSize.width < 768 ? '5%' : '32px'
+          }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.8 }}
         >
           <motion.button
             onClick={() => setActiveSection('gallery')}
-            className="px-8 py-4 bg-black text-white rounded-full text-lg font-light tracking-wider shadow-lg backdrop-blur-sm border border-gray-800"
+            className="px-6 py-3 md:px-8 md:py-4 bg-black text-white rounded-full text-base md:text-lg font-light tracking-wider shadow-lg backdrop-blur-sm border border-gray-800"
             whileHover={{ 
               scale: 1.05, 
               boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" 
