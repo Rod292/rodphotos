@@ -32,14 +32,40 @@ const Hero = ({ setActiveSection }) => {
   useEffect(() => {
     const importImages = async () => {
       try {
-        const imageModules = import.meta.glob('../../photos/*.jpg');
+        console.log("Tentative de chargement des images dans Hero");
+        
+        // Utiliser un chemin relatif par rapport à la racine du projet
+        const imageModules = import.meta.glob('/photos/*.jpg', { eager: false });
+        
+        // Alternative si le chemin ci-dessus ne fonctionne pas
+        if (Object.keys(imageModules).length === 0) {
+          console.log("Tentative avec un chemin alternatif");
+          const altImageModules = import.meta.glob('../../photos/*.jpg', { eager: false });
+          if (Object.keys(altImageModules).length > 0) {
+            console.log("Chemin alternatif trouvé avec", Object.keys(altImageModules).length, "images");
+            const promises = Object.keys(altImageModules).map(async (path) => {
+              console.log("Chemin d'image:", path);
+              const imgModule = await altImageModules[path]();
+              return imgModule.default;
+            });
+            
+            const results = await Promise.all(promises);
+            console.log("Images chargées avec succès:", results.length);
+            setImages(results);
+            return;
+          }
+        }
+        
+        console.log("Modules d'images trouvés:", Object.keys(imageModules).length);
         
         const promises = Object.keys(imageModules).map(async (path) => {
+          console.log("Chemin d'image:", path);
           const imgModule = await imageModules[path]();
           return imgModule.default;
         });
         
         const results = await Promise.all(promises);
+        console.log("Images chargées avec succès:", results.length);
         
         // Utiliser toutes les images disponibles
         setImages(results);

@@ -10,58 +10,82 @@ const Gallery = () => {
   useEffect(() => {
     const importImages = async () => {
       try {
-        const imageModules = import.meta.glob('../../photos/*.jpg');
-        const loadedImages = [];
+        console.log("Tentative de chargement des images dans Gallery");
         
-        // Nouvelles catégories : Nature, Surf, Villes
-        const categoryMap = {
-          // Nature - paysages naturels, montagnes, forêts, etc.
-          'A7404333.jpg': 'Nature',
-          'DSCF7196.jpg': 'Nature',
-          'DSCF5513.jpg': 'Nature',
-          'DSCF5068.jpg': 'Nature',
-          'DSCF7190.jpg': 'Nature',
-          'A7403945.jpg': 'Nature',
-          
-          // Surf - plages, océan, surfeurs, etc.
-          'DSCF5550.jpg': 'Surf',
-          'A7407595.jpg': 'Surf',
-          'DSCF5470.jpg': 'Surf',
-          'IMG_9816.jpg': 'Surf',
-          'DSCF0726.jpg': 'Surf',
-          
-          // Villes - architecture urbaine, rues, bâtiments, etc.
-          'DSCF7749.jpg': 'Villes',
-          'DSCF7645.jpg': 'Villes',
-          'DSCF5660.jpg': 'Villes',
-          'DSCF5481.jpg': 'Villes',
-          'DSCF5448.jpg': 'Villes',
-          'DSCF5027.jpg': 'Villes',
-          'DSCF2813.jpg': 'Villes'
-        };
+        // Utiliser un chemin relatif par rapport à la racine du projet
+        const imageModules = import.meta.glob('/photos/*.jpg', { eager: false });
         
-        for (const path in imageModules) {
-          const imgModule = await imageModules[path]();
-          const filename = path.split('/').pop();
-          
-          // Attribuer une catégorie par défaut si non spécifiée
-          const category = categoryMap[filename] || (
-            // Répartition aléatoire mais équilibrée entre les catégories
-            Math.random() < 0.33 ? 'Nature' : 
-            Math.random() < 0.5 ? 'Surf' : 'Villes'
-          );
-          
-          loadedImages.push({
-            src: imgModule.default,
-            category: category,
-            id: path
-          });
+        // Alternative si le chemin ci-dessus ne fonctionne pas
+        if (Object.keys(imageModules).length === 0) {
+          console.log("Tentative avec un chemin alternatif dans Gallery");
+          const altImageModules = import.meta.glob('../../photos/*.jpg', { eager: false });
+          if (Object.keys(altImageModules).length > 0) {
+            console.log("Chemin alternatif trouvé dans Gallery avec", Object.keys(altImageModules).length, "images");
+            await processImages(altImageModules);
+            return;
+          }
         }
         
-        setImages(loadedImages);
+        console.log("Modules d'images trouvés dans Gallery:", Object.keys(imageModules).length);
+        await processImages(imageModules);
       } catch (error) {
-        console.error("Erreur lors du chargement des images:", error);
+        console.error("Erreur lors du chargement des images dans Gallery:", error);
       }
+    };
+    
+    // Fonction pour traiter les images avec la même logique de catégorisation
+    const processImages = async (modules) => {
+      const loadedImages = [];
+      
+      // Nouvelles catégories : Nature, Surf, Villes
+      const categoryMap = {
+        // Nature - paysages naturels, montagnes, forêts, etc.
+        'A7404333.jpg': 'Nature',
+        'DSCF7196.jpg': 'Nature',
+        'DSCF5513.jpg': 'Nature',
+        'DSCF5068.jpg': 'Nature',
+        'DSCF7190.jpg': 'Nature',
+        'A7403945.jpg': 'Nature',
+        
+        // Surf - plages, océan, surfeurs, etc.
+        'DSCF5550.jpg': 'Surf',
+        'A7407595.jpg': 'Surf',
+        'DSCF5470.jpg': 'Surf',
+        'IMG_9816.jpg': 'Surf',
+        'DSCF0726.jpg': 'Surf',
+        
+        // Villes - architecture urbaine, rues, bâtiments, etc.
+        'DSCF7749.jpg': 'Villes',
+        'DSCF7645.jpg': 'Villes',
+        'DSCF5660.jpg': 'Villes',
+        'DSCF5481.jpg': 'Villes',
+        'DSCF5448.jpg': 'Villes',
+        'DSCF5027.jpg': 'Villes',
+        'DSCF2813.jpg': 'Villes'
+      };
+      
+      for (const path in modules) {
+        console.log("Traitement du chemin d'image:", path);
+        const imgModule = await modules[path]();
+        const filename = path.split('/').pop();
+        console.log("Nom de fichier extrait:", filename);
+        
+        // Attribuer une catégorie par défaut si non spécifiée
+        const category = categoryMap[filename] || (
+          // Répartition aléatoire mais équilibrée entre les catégories
+          Math.random() < 0.33 ? 'Nature' : 
+          Math.random() < 0.5 ? 'Surf' : 'Villes'
+        );
+        
+        loadedImages.push({
+          src: imgModule.default,
+          category: category,
+          id: path
+        });
+      }
+      
+      console.log("Total d'images chargées dans Gallery:", loadedImages.length);
+      setImages(loadedImages);
     };
     
     importImages();
