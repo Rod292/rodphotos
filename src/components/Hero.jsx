@@ -84,7 +84,7 @@ const Hero = ({ setActiveSection }) => {
       controls.start({
         rotate: 360,
         transition: {
-          duration: 60, // Rotation plus rapide (1 minute par tour complet)
+          duration: 120, // Rotation plus lente (2 minutes par tour complet)
           ease: "linear",
           repeat: Infinity,
           repeatType: "loop"
@@ -104,12 +104,12 @@ const Hero = ({ setActiveSection }) => {
     const circleWidth = 360;
     
     // Rayon du cercle adapté à la taille de l'écran
-    // Augmenter le rayon sur mobile pour que le cercle soit plus visible
+    // Augmenter davantage le rayon sur mobile pour qu'il soit similaire à la version desktop
     const isMobile = windowSize.width < 768;
-    const radius = Math.min(windowSize.width, windowSize.height) * (isMobile ? 0.5 : 0.65);
+    const radius = Math.min(windowSize.width, windowSize.height) * (isMobile ? 0.65 : 0.65);
     
-    // Taille fixe pour toutes les images, plus petite sur mobile mais pas trop
-    const fixedScale = isMobile ? 0.8 : 1.0;
+    // Taille fixe pour toutes les images, plus grande sur mobile pour ressembler à la version desktop
+    const fixedScale = isMobile ? 0.9 : 1.0;
     
     // Espacement minimal entre les images (en degrés)
     const minAngleBetweenImages = 360 / (count * 1.5);
@@ -170,8 +170,8 @@ const Hero = ({ setActiveSection }) => {
           style={{ 
             originY: 0, 
             originX: 0.5,
-            // Ajuster la position du cercle sur mobile
-            bottom: windowSize.width < 768 ? '20%' : '0'
+            // Ajuster la position du cercle sur mobile pour qu'il soit plus centré
+            bottom: windowSize.width < 768 ? '25%' : '0'
           }}
         >
           {images.map((image, index) => (
@@ -184,9 +184,9 @@ const Hero = ({ setActiveSection }) => {
                 transition: { duration: 0.8, delay: index * 0.05 }
               }}
               style={{
-                // Taille plus grande sur mobile
-                width: `${Math.min(windowSize.width < 768 ? 180 : 250, windowSize.width * (windowSize.width < 768 ? 0.18 : 0.2))}px`,
-                height: `${Math.min(windowSize.width < 768 ? 240 : 350, windowSize.width * (windowSize.width < 768 ? 0.24 : 0.25))}px`,
+                // Taille encore plus grande sur mobile
+                width: `${Math.min(windowSize.width < 768 ? 200 : 250, windowSize.width * (windowSize.width < 768 ? 0.22 : 0.2))}px`,
+                height: `${Math.min(windowSize.width < 768 ? 280 : 350, windowSize.width * (windowSize.width < 768 ? 0.28 : 0.25))}px`,
                 left: positions[index]?.x || 0,
                 top: positions[index]?.y || 0,
                 transform: `translate(-50%, -50%) rotate(${positions[index]?.rotation || 0}deg)`,
