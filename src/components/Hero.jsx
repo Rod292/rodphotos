@@ -34,29 +34,27 @@ const Hero = ({ setActiveSection }) => {
       try {
         console.log("Tentative de chargement des images dans Hero");
         
-        // Utiliser un chemin relatif par rapport à la racine du projet
-        const imageModules = import.meta.glob('/photos/*.jpg', { eager: false });
+        // Essayer d'abord avec le chemin absolu (pour la production)
+        let imageModules = import.meta.glob('/photos/*.jpg', { eager: false });
         
-        // Alternative si le chemin ci-dessus ne fonctionne pas
+        // Si aucune image n'est trouvée, essayer avec le chemin relatif (pour le développement local)
         if (Object.keys(imageModules).length === 0) {
-          console.log("Tentative avec un chemin alternatif");
-          const altImageModules = import.meta.glob('../../photos/*.jpg', { eager: false });
-          if (Object.keys(altImageModules).length > 0) {
-            console.log("Chemin alternatif trouvé avec", Object.keys(altImageModules).length, "images");
-            const promises = Object.keys(altImageModules).map(async (path) => {
-              console.log("Chemin d'image:", path);
-              const imgModule = await altImageModules[path]();
-              return imgModule.default;
-            });
-            
-            const results = await Promise.all(promises);
-            console.log("Images chargées avec succès:", results.length);
-            setImages(results);
-            return;
-          }
+          console.log("Aucune image trouvée avec le chemin absolu, tentative avec un chemin relatif");
+          imageModules = import.meta.glob('../../photos/*.jpg', { eager: false });
+        }
+        
+        // Si toujours aucune image, essayer avec un autre chemin relatif
+        if (Object.keys(imageModules).length === 0) {
+          console.log("Tentative avec un autre chemin relatif");
+          imageModules = import.meta.glob('../photos/*.jpg', { eager: false });
         }
         
         console.log("Modules d'images trouvés:", Object.keys(imageModules).length);
+        
+        if (Object.keys(imageModules).length === 0) {
+          console.error("Aucune image trouvée avec tous les chemins essayés");
+          return;
+        }
         
         const promises = Object.keys(imageModules).map(async (path) => {
           console.log("Chemin d'image:", path);
