@@ -1,30 +1,20 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,jsx,ts,tsx}",
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: 'media',
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Space Grotesk', 'sans-serif'],
+        sans: ['var(--font-inter)', 'sans-serif'],
       },
       colors: {
-        primary: '#171717',
-        secondary: '#f8f8f8',
-      },
-      animation: {
-        'float': 'float 6s ease-in-out infinite',
-        'spin-slow': 'spin 15s linear infinite',
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-10px)' },
-        }
+        primary: '#000000',
+        secondary: '#FFFFFF',
       },
     },
   },
   plugins: [],
-} 
+}; 
