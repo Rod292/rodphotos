@@ -163,7 +163,7 @@ const Hero = ({ setActiveSection }) => {
       ref={containerRef}
     >
       {/* Section cercle de photos */}
-      <div className="relative w-full h-full flex items-center justify-center">
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
         <motion.div 
           className="absolute bottom-0 left-1/2 transform -translate-x-1/2"
           animate={controls}

@@ -39,7 +39,7 @@ const App = () => {
           </motion.div>
         </motion.div>
       ) : (
-        <div className="min-h-screen">
+        <div className={`min-h-screen bg-white text-black ${activeSection === 'home' ? 'overflow-hidden' : ''}`}>
           <Header activeSection={activeSection} setActiveSection={setActiveSection} />
           
           <main>
