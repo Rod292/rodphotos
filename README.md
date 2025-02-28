@@ -8,6 +8,7 @@ Le projet avait des problèmes de chargement d'images en production, principalem
 
 1. **Chemins d'images relatifs**: Les chemins d'images utilisaient `import.meta.glob('../../photos/*.jpg')` qui fonctionnait en développement mais pas en production.
 2. **Configuration de base URL manquante**: Vite n'avait pas de configuration `base` définie, ce qui causait des problèmes avec les chemins d'assets en production.
+3. **Politique de sécurité du contenu (CSP)**: Vercel bloquait l'utilisation de `eval` dans JavaScript, ce qui empêchait certaines fonctionnalités de Vite de fonctionner correctement.
 
 ## Solutions implémentées
 
@@ -23,6 +24,11 @@ Le projet avait des problèmes de chargement d'images en production, principalem
 
 3. **Gestion des ressources statiques**:
    - Les images sont maintenant correctement référencées et chargées
+
+4. **Configuration de la politique de sécurité du contenu (CSP)**:
+   - Ajout d'un fichier `vercel.json` pour configurer les en-têtes de sécurité
+   - Autorisation de `unsafe-eval` pour permettre à Vite de fonctionner correctement en production
+   - Configuration des autres directives CSP pour maintenir un bon niveau de sécurité
 
 ## Déploiement
 
