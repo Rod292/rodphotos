@@ -104,12 +104,12 @@ const Hero = ({ setActiveSection }) => {
     const circleWidth = 360;
     
     // Rayon du cercle adapté à la taille de l'écran
-    // Réduire le rayon sur mobile pour que le cercle soit plus visible
+    // Augmenter le rayon sur mobile pour que le cercle soit plus visible
     const isMobile = windowSize.width < 768;
-    const radius = Math.min(windowSize.width, windowSize.height) * (isMobile ? 0.4 : 0.65);
+    const radius = Math.min(windowSize.width, windowSize.height) * (isMobile ? 0.5 : 0.65);
     
-    // Taille fixe pour toutes les images, plus petite sur mobile
-    const fixedScale = isMobile ? 0.7 : 1.0;
+    // Taille fixe pour toutes les images, plus petite sur mobile mais pas trop
+    const fixedScale = isMobile ? 0.8 : 1.0;
     
     // Espacement minimal entre les images (en degrés)
     const minAngleBetweenImages = 360 / (count * 1.5);
@@ -171,7 +171,7 @@ const Hero = ({ setActiveSection }) => {
             originY: 0, 
             originX: 0.5,
             // Ajuster la position du cercle sur mobile
-            bottom: windowSize.width < 768 ? '15%' : '0'
+            bottom: windowSize.width < 768 ? '20%' : '0'
           }}
         >
           {images.map((image, index) => (
@@ -184,9 +184,9 @@ const Hero = ({ setActiveSection }) => {
                 transition: { duration: 0.8, delay: index * 0.05 }
               }}
               style={{
-                // Taille plus petite sur mobile
-                width: `${Math.min(windowSize.width < 768 ? 150 : 250, windowSize.width * (windowSize.width < 768 ? 0.15 : 0.2))}px`,
-                height: `${Math.min(windowSize.width < 768 ? 200 : 350, windowSize.width * (windowSize.width < 768 ? 0.2 : 0.25))}px`,
+                // Taille plus grande sur mobile
+                width: `${Math.min(windowSize.width < 768 ? 180 : 250, windowSize.width * (windowSize.width < 768 ? 0.18 : 0.2))}px`,
+                height: `${Math.min(windowSize.width < 768 ? 240 : 350, windowSize.width * (windowSize.width < 768 ? 0.24 : 0.25))}px`,
                 left: positions[index]?.x || 0,
                 top: positions[index]?.y || 0,
                 transform: `translate(-50%, -50%) rotate(${positions[index]?.rotation || 0}deg)`,
