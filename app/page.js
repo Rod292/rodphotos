@@ -40,7 +40,7 @@ export default function Home() {
           </motion.div>
         </motion.div>
       ) : (
-        <div className={`min-h-screen bg-white text-black ${activeSection === 'home' ? 'overflow-hidden' : ''}`}>
+        <div className={`min-h-screen ${activeSection === 'home' ? 'overflow-hidden' : ''}`}>
           <Header activeSection={activeSection} setActiveSection={setActiveSection} />
           
           <main>

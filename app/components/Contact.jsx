@@ -103,7 +103,7 @@ const Contact = () => {
   
   return (
     <motion.section 
-      className="min-h-screen w-full pt-24 pb-16 px-4 md:px-8 bg-white"
+      className="min-h-screen w-full pt-24 pb-16 px-4 md:px-8 section-content"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -127,23 +127,23 @@ const Contact = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <h2 className="text-xl font-light mb-6">Restons en contact</h2>
-            <p className="text-gray-700 mb-6 leading-relaxed">
+            <p className="text-gray-300 mb-6 leading-relaxed">
               Pour toute demande de collaboration, de shooting ou simplement pour échanger sur la photographie, n'hésitez pas à me contacter.
             </p>
             
             <div className="space-y-4 mb-8">
               <div className="flex items-start">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mt-0.5 mr-3 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mt-0.5 mr-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span className="text-gray-700">contact@rod-photos.com</span>
+                <span className="text-gray-300">contact@rod-photos.com</span>
               </div>
               <div className="flex items-start">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mt-0.5 mr-3 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mt-0.5 mr-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-gray-700">Paris, France</span>
+                <span className="text-gray-300">Paris, France</span>
               </div>
             </div>
             
@@ -154,7 +154,7 @@ const Contact = () => {
                 href="https://instagram.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-gray-700 hover:text-black transition-colors"
+                className="text-gray-300 hover:text-white transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -166,7 +166,7 @@ const Contact = () => {
                 href="https://twitter.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-gray-700 hover:text-black transition-colors"
+                className="text-gray-300 hover:text-white transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -178,7 +178,7 @@ const Contact = () => {
                 href="https://linkedin.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-gray-700 hover:text-black transition-colors"
+                className="text-gray-300 hover:text-white transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -197,7 +197,7 @@ const Contact = () => {
           >
             {formStatus.submitted && formStatus.success ? (
               <motion.div 
-                className="bg-green-50 border border-green-200 rounded-lg p-6 text-center"
+                className="bg-green-900/30 border border-green-800 rounded-lg p-6 text-center"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
@@ -205,13 +205,13 @@ const Contact = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-green-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <h3 className="text-xl font-light text-green-800 mb-2">Message envoyé !</h3>
-                <p className="text-green-700">{formStatus.message}</p>
+                <h3 className="text-xl font-light text-green-300 mb-2">Message envoyé !</h3>
+                <p className="text-green-400">{formStatus.message}</p>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
                     Nom
                   </label>
                   <input
@@ -220,8 +220,8 @@ const Contact = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black/20 ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-4 py-2 bg-gray-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-white/20 ${
+                      errors.name ? 'border-red-500' : 'border-gray-700'
                     }`}
                   />
                   {errors.name && (
@@ -230,7 +230,7 @@ const Contact = () => {
                 </div>
                 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
                     Email
                   </label>
                   <input
@@ -239,8 +239,8 @@ const Contact = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black/20 ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-4 py-2 bg-gray-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-white/20 ${
+                      errors.email ? 'border-red-500' : 'border-gray-700'
                     }`}
                   />
                   {errors.email && (
@@ -249,7 +249,7 @@ const Contact = () => {
                 </div>
                 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-1">
                     Message
                   </label>
                   <textarea
@@ -258,8 +258,8 @@ const Contact = () => {
                     rows="5"
                     value={formData.message}
                     onChange={handleChange}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black/20 ${
-                      errors.message ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-4 py-2 bg-gray-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-white/20 ${
+                      errors.message ? 'border-red-500' : 'border-gray-700'
                     }`}
                   ></textarea>
                   {errors.message && (
@@ -269,7 +269,7 @@ const Contact = () => {
                 
                 <motion.button
                   type="submit"
-                  className="w-full px-6 py-3 bg-black text-white rounded-md font-light tracking-wide"
+                  className="btn-primary w-full"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >

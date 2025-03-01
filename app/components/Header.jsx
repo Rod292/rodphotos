@@ -59,11 +59,19 @@ const Header = ({ activeSection, setActiveSection }) => {
     { id: 'contact', label: 'Contact' }
   ];
   
+  // Déterminer la couleur du texte en fonction de la section active
+  const getTextColor = () => {
+    if (activeSection === 'home' && !scrolled && !isMenuOpen) {
+      return 'text-black';
+    }
+    return 'text-white';
+  };
+  
   return (
     <motion.header 
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
         scrolled || isMenuOpen || activeSection !== 'home' 
-          ? 'bg-white/90 backdrop-blur-md shadow-sm' 
+          ? 'bg-black/90 backdrop-blur-md shadow-sm' 
           : 'bg-transparent'
       }`}
       initial={{ opacity: 0, y: -20 }}
@@ -73,7 +81,7 @@ const Header = ({ activeSection, setActiveSection }) => {
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
         <motion.div 
-          className="text-2xl font-light cursor-pointer"
+          className={`text-2xl font-light cursor-pointer ${getTextColor()}`}
           onClick={() => setActiveSection('home')}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
@@ -89,8 +97,8 @@ const Header = ({ activeSection, setActiveSection }) => {
               onClick={() => setActiveSection(item.id)}
               className={`text-sm font-light tracking-wide transition-colors ${
                 activeSection === item.id 
-                  ? 'text-black' 
-                  : 'text-gray-500 hover:text-black'
+                  ? (activeSection === 'home' && !scrolled) ? 'text-black' : 'text-white' 
+                  : (activeSection === 'home' && !scrolled) ? 'text-black/70 hover:text-black' : 'text-gray-400 hover:text-white'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
@@ -102,22 +110,22 @@ const Header = ({ activeSection, setActiveSection }) => {
         
         {/* Bouton menu mobile */}
         <motion.button
-          className="md:hidden flex flex-col justify-center items-center w-8 h-8"
+          className={`md:hidden flex flex-col justify-center items-center w-8 h-8 ${getTextColor()}`}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           whileTap={{ scale: 0.9 }}
         >
           <motion.span
-            className={`block w-6 h-0.5 bg-black mb-1.5 transition-transform ${
+            className={`block w-6 h-0.5 ${getTextColor()} mb-1.5 transition-transform ${
               isMenuOpen ? 'rotate-45 translate-y-2' : ''
             }`}
           />
           <motion.span
-            className={`block w-6 h-0.5 bg-black transition-opacity ${
+            className={`block w-6 h-0.5 ${getTextColor()} transition-opacity ${
               isMenuOpen ? 'opacity-0' : 'opacity-100'
             }`}
           />
           <motion.span
-            className={`block w-6 h-0.5 bg-black mt-1.5 transition-transform ${
+            className={`block w-6 h-0.5 ${getTextColor()} mt-1.5 transition-transform ${
               isMenuOpen ? '-rotate-45 -translate-y-2' : ''
             }`}
           />
@@ -128,7 +136,7 @@ const Header = ({ activeSection, setActiveSection }) => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md shadow-md"
+            className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-md shadow-md"
             initial="closed"
             animate="open"
             exit="closed"
@@ -141,8 +149,8 @@ const Header = ({ activeSection, setActiveSection }) => {
                   onClick={() => setActiveSection(item.id)}
                   className={`text-left py-2 text-lg font-light tracking-wide transition-colors ${
                     activeSection === item.id 
-                      ? 'text-black' 
-                      : 'text-gray-500'
+                      ? 'text-white' 
+                      : 'text-gray-400'
                   }`}
                   variants={itemVariants}
                   whileTap={{ scale: 0.98 }}

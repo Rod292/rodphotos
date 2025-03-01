@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const Hero = ({ setActiveSection }) => {
   // Importation dynamique des images
@@ -140,7 +140,7 @@ const Hero = ({ setActiveSection }) => {
 
   return (
     <motion.section 
-      className="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-white"
+      className="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-white hero-section"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -195,9 +195,9 @@ const Hero = ({ setActiveSection }) => {
           ))}
         </motion.div>
         
-        {/* Bouton pour accéder à la galerie */}
+        {/* Boutons */}
         <motion.div 
-          className="absolute z-50"
+          className="absolute z-50 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4"
           style={{
             bottom: windowSize.width < 768 ? '5%' : '32px'
           }}
@@ -207,7 +207,7 @@ const Hero = ({ setActiveSection }) => {
         >
           <motion.button
             onClick={() => setActiveSection('gallery')}
-            className="px-6 py-3 md:px-8 md:py-4 bg-black text-white rounded-full text-base md:text-lg font-light tracking-wider shadow-lg backdrop-blur-sm border border-gray-800"
+            className="btn-dark"
             whileHover={{ 
               scale: 1.05, 
               boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" 
@@ -216,6 +216,19 @@ const Hero = ({ setActiveSection }) => {
           >
             Découvrir la galerie
           </motion.button>
+          
+          <Link href="https://arode.studio" target="_blank" rel="noopener noreferrer">
+            <motion.button
+              className="btn-dark"
+              whileHover={{ 
+                scale: 1.05, 
+                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" 
+              }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Arode Studio
+            </motion.button>
+          </Link>
         </motion.div>
       </div>
     </motion.section>
