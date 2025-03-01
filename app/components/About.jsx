@@ -35,7 +35,7 @@ const About = () => {
             <div 
               className="w-full h-full bg-cover bg-center"
               style={{ 
-                backgroundImage: "url('/profile.jpg')",
+                backgroundImage: "url('/ROD.png')",
                 backgroundPosition: 'center',
                 backgroundSize: 'cover'
               }}
