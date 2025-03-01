@@ -38,6 +38,7 @@ const About = () => {
               sizes="(max-width: 768px) 100vw, 50vw"
               style={{ objectFit: 'cover' }}
               priority
+              unoptimized={true}
             />
           </motion.div>
           
