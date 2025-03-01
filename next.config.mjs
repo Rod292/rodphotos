@@ -1,11 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [],
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true,
   },
   reactStrictMode: true,
-  swcMinify: true,
+  // La propriété swcMinify n'est plus nécessaire dans Next.js 15+
 };
 
 export default nextConfig; 

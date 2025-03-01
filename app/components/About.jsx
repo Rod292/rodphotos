@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const About = () => {
   return (
@@ -31,14 +32,10 @@ const About = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Image
+            <img
               src="/profilepicture.JPG"
-              alt="Portrait du photographe"
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ objectFit: 'cover' }}
-              priority
-              unoptimized={true}
+              alt="Portrait de ROD"
+              className="w-full h-full object-cover"
             />
           </motion.div>
           
@@ -51,14 +48,48 @@ const About = () => {
           >
             <h2 className="text-2xl font-light mb-4">ROD</h2>
             <p className="text-gray-300 mb-4 leading-relaxed">
-              Photographe autodidacte basé à Paris, je capture des moments authentiques à travers mon objectif depuis plus de 8 ans.
+              Je suis ROD, un photographe breton de 24 ans passionné par la capture de moments simples, la nature, et les couleurs uniques du film argentique.
             </p>
             <p className="text-gray-300 mb-4 leading-relaxed">
-              Ma passion pour la photographie m'a amené à explorer différents styles, des paysages urbains aux portraits intimes, en passant par la photographie de rue.
+              Mon approche photographique se concentre sur la beauté du quotidien, les paysages naturels et l'authenticité des instants capturés. J'aime particulièrement travailler avec la photographie argentique pour sa richesse de tons et son caractère inimitable.
+            </p>
+            <p className="text-gray-300 mb-4 leading-relaxed">
+              Je réalise également des photos de surf, capturant l'énergie des vagues et la passion des surfeurs en action. Pour découvrir mon travail dédié à l'univers du surf, visitez Arode Studio.
             </p>
             <p className="text-gray-300 leading-relaxed">
-              Je cherche à capturer l'essence des moments et des lieux, en mettant l'accent sur la lumière naturelle et les compositions authentiques.
+              Je propose mes photos à la vente et je réalise également des séances photo de style lifestyle pour vos futures campagnes. N'hésitez pas à me contacter pour discuter de vos projets ou pour acquérir mes œuvres.
             </p>
+            
+            <div className="flex flex-wrap gap-4 mt-8">
+              <Link href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                <motion.button
+                  className="btn-primary"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Instagram
+                </motion.button>
+              </Link>
+              
+              <motion.button
+                onClick={() => window.location.href = '#contact'}
+                className="btn-primary"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Contact
+              </motion.button>
+              
+              <Link href="https://arode.studio" target="_blank" rel="noopener noreferrer">
+                <motion.button
+                  className="btn-primary flex items-center"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className="mr-2">🏄</span> Arode Studio
+                </motion.button>
+              </Link>
+            </div>
           </motion.div>
         </div>
       </div>
