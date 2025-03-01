@@ -4,7 +4,7 @@ const nextConfig = {
     unoptimized: true,
   },
   reactStrictMode: true,
-  // La propriété swcMinify n'est plus nécessaire dans Next.js 15+
+  // Suppression complète de la propriété swcMinify
 };
 
 export default nextConfig; 
