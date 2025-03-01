@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 
 const About = () => {
@@ -32,11 +31,16 @@ const About = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <img
-              src="/profilepicture.JPG"
-              alt="Portrait de ROD"
-              className="w-full h-full object-cover"
-            />
+            {/* Utilisation d'une div avec background-image pour éviter les problèmes avec les composants Image */}
+            <div 
+              className="w-full h-full bg-cover bg-center"
+              style={{ 
+                backgroundImage: "url('/profile.jpg')",
+                backgroundPosition: 'center',
+                backgroundSize: 'cover'
+              }}
+              aria-label="Portrait de ROD"
+            ></div>
           </motion.div>
           
           {/* Texte de présentation */}
