@@ -24,17 +24,17 @@ export default function Home() {
   return (
     <AnimatePresence>
       {loading ? (
-        <motion.div 
+        <motion.div
           key="loader"
           className="fixed inset-0 flex items-center justify-center bg-black z-50"
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="text-white text-4xl font-light"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-white logo-wordmark text-5xl"
           >
             ROD
           </motion.div>
@@ -47,7 +47,7 @@ export default function Home() {
             <AnimatePresence mode="wait">
               {activeSection === 'home' && <Hero key="hero" setActiveSection={setActiveSection} />}
               {activeSection === 'gallery' && <Gallery key="gallery" />}
-              {activeSection === 'about' && <About key="about" />}
+              {activeSection === 'about' && <About key="about" setActiveSection={setActiveSection} />}
               {activeSection === 'contact' && <Contact key="contact" />}
             </AnimatePresence>
           </main>

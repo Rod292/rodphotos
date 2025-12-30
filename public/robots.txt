@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rod-photos.com/sitemap.xml

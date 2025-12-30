@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 
 const Hero = ({ setActiveSection }) => {
   // Importation dynamique des images
@@ -180,9 +179,9 @@ const Hero = ({ setActiveSection }) => {
           ))}
         </motion.div>
         
-        {/* Boutons */}
-        <motion.div 
-          className="absolute z-50 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4"
+        {/* Bouton */}
+        <motion.div
+          className="absolute z-50"
           style={{
             bottom: windowSize.width < 768 ? '5%' : '32px'
           }}
@@ -193,27 +192,14 @@ const Hero = ({ setActiveSection }) => {
           <motion.button
             onClick={() => setActiveSection('gallery')}
             className="btn-dark"
-            whileHover={{ 
-              scale: 1.05, 
-              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" 
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)"
             }}
             whileTap={{ scale: 0.98 }}
           >
             Découvrir la galerie
           </motion.button>
-          
-          <Link href="https://arode.studio" target="_blank" rel="noopener noreferrer">
-            <motion.button
-              className="btn-dark"
-              whileHover={{ 
-                scale: 1.05, 
-                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" 
-              }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Arode Studio
-            </motion.button>
-          </Link>
         </motion.div>
       </div>
     </motion.section>
