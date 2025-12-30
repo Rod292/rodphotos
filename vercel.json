@@ -1,8 +1,7 @@
 {
-  "version": 2,
+  "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "framework": "nextjs",
   "headers": [
     {
       "source": "/(.*)",
@@ -26,4 +25,4 @@
       ]
     }
   ]
-} 
+}
