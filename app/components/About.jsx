@@ -80,7 +80,7 @@ const About = ({ setActiveSection }) => {
 
             <div className="flex flex-wrap gap-4 mt-6">
               <Link
-                href="https://instagram.com"
+                href="https://instagram.com/pcklerod"
                 target="_blank"
                 rel="noopener noreferrer"
               >

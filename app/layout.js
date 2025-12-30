@@ -64,8 +64,7 @@ const jsonLd = {
   },
   priceRange: '$$',
   sameAs: [
-    'https://instagram.com',
-    'https://arode.studio',
+    'https://instagram.com/pcklerod',
   ],
 };
 
