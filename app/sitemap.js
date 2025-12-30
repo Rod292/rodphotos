@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = 'https://rod-photos.com';
+  const baseUrl = 'https://photosrod.com';
 
   return [
     {

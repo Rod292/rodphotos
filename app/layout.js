@@ -21,11 +21,11 @@ export const metadata = {
   keywords: ['photographie', 'photographe', 'bretagne', 'paysage', 'portrait', 'street', 'surf', 'ROD'],
   authors: [{ name: 'ROD' }],
   creator: 'ROD',
-  metadataBase: new URL('https://rod-photos.com'),
+  metadataBase: new URL('https://photosrod.com'),
   openGraph: {
     title: 'ROD - Photographie',
     description: 'Portfolio de photographie minimaliste par ROD, photographe breton.',
-    url: 'https://rod-photos.com',
+    url: 'https://photosrod.com',
     siteName: 'ROD Photographie',
     images: [
       {
@@ -55,11 +55,11 @@ const jsonLd = {
   '@type': 'ProfessionalService',
   name: 'ROD Photographie',
   description: 'Photographe professionnel basé en Bretagne, spécialisé dans les paysages, portraits, street photography et photographie de surf.',
-  url: 'https://rod-photos.com',
-  image: 'https://rod-photos.com/photos/A7403945.jpg',
+  url: 'https://photosrod.com',
+  image: 'https://photosrod.com/photos/A7403945.jpg',
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'Paris',
+    addressLocality: 'Nantes',
     addressCountry: 'FR',
   },
   priceRange: '$$',

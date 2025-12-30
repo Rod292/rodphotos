@@ -139,7 +139,7 @@ const Contact = () => {
                   </svg>
                 </div>
                 <span className="text-white/70 text-sm tracking-wide">
-                  contact@rod-photos.com
+                  photos.pers@gmail.com
                 </span>
               </div>
 
@@ -166,7 +166,7 @@ const Contact = () => {
                   </svg>
                 </div>
                 <span className="text-white/70 text-sm tracking-wide">
-                  Paris, France
+                  Nantes, France
                 </span>
               </div>
             </div>
