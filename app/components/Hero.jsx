@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 
 const Hero = ({ setActiveSection }) => {
   // Importation dynamique des images
@@ -32,37 +31,22 @@ const Hero = ({ setActiveSection }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
+  // Liste statique des images
+  const imageNames = useMemo(() => [
+    'A7403945.jpg', 'A7404333.jpg', 'A7407595.jpg',
+    'DSCF0726.jpg', 'DSCF2813.jpg', 'DSCF5027.jpg',
+    'DSCF5068.jpg', 'DSCF5448.jpg', 'DSCF5470.jpg',
+    'DSCF5481.jpg', 'DSCF5513.jpg', 'DSCF5550.jpg',
+    'DSCF5660.jpg', 'DSCF7190.jpg', 'DSCF7196.jpg',
+    'DSCF7645.jpg', 'DSCF7749.jpg', 'IMG_9816.jpg'
+  ], []);
+
   // Chargement des images
   useEffect(() => {
-    const loadImages = async () => {
-      try {
-        console.log("Tentative de chargement des images dans Hero");
-        
-        // Utiliser une approche différente pour Next.js
-        // Nous allons charger les images statiquement depuis le dossier public
-        const imageNames = [
-          'A7403945.jpg', 'A7404333.jpg', 'A7407595.jpg', 
-          'DSCF0726.jpg', 'DSCF2813.jpg', 'DSCF5027.jpg', 
-          'DSCF5068.jpg', 'DSCF5448.jpg', 'DSCF5470.jpg',
-          'DSCF5481.jpg', 'DSCF5513.jpg', 'DSCF5550.jpg',
-          'DSCF5660.jpg', 'DSCF7190.jpg', 'DSCF7196.jpg',
-          'DSCF7645.jpg', 'DSCF7749.jpg', 'IMG_9816.jpg'
-        ];
-        
-        const imagePaths = imageNames.map(name => `/photos/${name}`);
-        console.log("Images trouvées:", imagePaths.length);
-        
-        setImages(imagePaths);
-      } catch (error) {
-        console.error("Erreur lors du chargement des images:", error);
-      }
-    };
-    
-    // S'assurer que les images ne sont chargées qu'une seule fois
     if (images.length === 0) {
-      loadImages();
+      setImages(imageNames.map(name => `/photos/${name}`));
     }
-  }, [images.length]);
+  }, [images.length, imageNames]);
 
   // Démarrer l'animation de rotation une fois que les images sont chargées
   useEffect(() => {
@@ -195,9 +179,9 @@ const Hero = ({ setActiveSection }) => {
           ))}
         </motion.div>
         
-        {/* Boutons */}
-        <motion.div 
-          className="absolute z-50 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4"
+        {/* Bouton */}
+        <motion.div
+          className="absolute z-50"
           style={{
             bottom: windowSize.width < 768 ? '5%' : '32px'
           }}
@@ -208,27 +192,14 @@ const Hero = ({ setActiveSection }) => {
           <motion.button
             onClick={() => setActiveSection('gallery')}
             className="btn-dark"
-            whileHover={{ 
-              scale: 1.05, 
-              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" 
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)"
             }}
             whileTap={{ scale: 0.98 }}
           >
             Découvrir la galerie
           </motion.button>
-          
-          <Link href="https://arode.studio" target="_blank" rel="noopener noreferrer">
-            <motion.button
-              className="btn-dark"
-              whileHover={{ 
-                scale: 1.05, 
-                boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)" 
-              }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Arode Studio
-            </motion.button>
-          </Link>
         </motion.div>
       </div>
     </motion.section>

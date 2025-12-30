@@ -55,7 +55,7 @@ rodphotos/
 │   └── page.js           # Page d'accueil
 ├── public/               # Fichiers statiques
 │   ├── photos/           # Photos du portfolio
-│   └── profilepicture.JPG # Photo de profil
+│   └── ROD.png           # Photo de profil
 ├── next.config.mjs       # Configuration Next.js
 ├── tailwind.config.js    # Configuration Tailwind CSS
 └── package.json          # Dépendances et scripts
