@@ -31,16 +31,15 @@ const About = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            {/* Utilisation d'une div avec background-image pour éviter les problèmes avec les composants Image */}
-            <div 
+            <div
               className="w-full h-full bg-cover bg-center"
-              style={{ 
-                backgroundImage: "url('/ROD.png')",
+              style={{
+                backgroundImage: "url('/ROD-optimized.jpg')",
                 backgroundPosition: 'center',
                 backgroundSize: 'cover'
               }}
               aria-label="Portrait de ROD"
-            ></div>
+            />
           </motion.div>
           
           {/* Texte de présentation */}

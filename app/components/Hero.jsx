@@ -32,37 +32,22 @@ const Hero = ({ setActiveSection }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
+  // Liste statique des images
+  const imageNames = useMemo(() => [
+    'A7403945.jpg', 'A7404333.jpg', 'A7407595.jpg',
+    'DSCF0726.jpg', 'DSCF2813.jpg', 'DSCF5027.jpg',
+    'DSCF5068.jpg', 'DSCF5448.jpg', 'DSCF5470.jpg',
+    'DSCF5481.jpg', 'DSCF5513.jpg', 'DSCF5550.jpg',
+    'DSCF5660.jpg', 'DSCF7190.jpg', 'DSCF7196.jpg',
+    'DSCF7645.jpg', 'DSCF7749.jpg', 'IMG_9816.jpg'
+  ], []);
+
   // Chargement des images
   useEffect(() => {
-    const loadImages = async () => {
-      try {
-        console.log("Tentative de chargement des images dans Hero");
-        
-        // Utiliser une approche différente pour Next.js
-        // Nous allons charger les images statiquement depuis le dossier public
-        const imageNames = [
-          'A7403945.jpg', 'A7404333.jpg', 'A7407595.jpg', 
-          'DSCF0726.jpg', 'DSCF2813.jpg', 'DSCF5027.jpg', 
-          'DSCF5068.jpg', 'DSCF5448.jpg', 'DSCF5470.jpg',
-          'DSCF5481.jpg', 'DSCF5513.jpg', 'DSCF5550.jpg',
-          'DSCF5660.jpg', 'DSCF7190.jpg', 'DSCF7196.jpg',
-          'DSCF7645.jpg', 'DSCF7749.jpg', 'IMG_9816.jpg'
-        ];
-        
-        const imagePaths = imageNames.map(name => `/photos/${name}`);
-        console.log("Images trouvées:", imagePaths.length);
-        
-        setImages(imagePaths);
-      } catch (error) {
-        console.error("Erreur lors du chargement des images:", error);
-      }
-    };
-    
-    // S'assurer que les images ne sont chargées qu'une seule fois
     if (images.length === 0) {
-      loadImages();
+      setImages(imageNames.map(name => `/photos/${name}`));
     }
-  }, [images.length]);
+  }, [images.length, imageNames]);
 
   // Démarrer l'animation de rotation une fois que les images sont chargées
   useEffect(() => {
