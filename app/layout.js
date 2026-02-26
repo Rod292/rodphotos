@@ -1,19 +1,25 @@
-import { Inter } from 'next/font/google';
+import { Montserrat } from 'next/font/google';
 import './styles/globals.css';
+import Header from './components/Header';
 
-const inter = Inter({ subsets: ['latin'] });
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  display: 'swap',
+});
 
 export const metadata = {
   title: 'ROD - Photographie',
-  description: 'Portfolio de photographie minimaliste',
+  description: 'Portfolio de photographie minimaliste par ROD, photographe breton',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="fr">
-      <body className={inter.className}>
-        {children}
+      <body className={montserrat.className}>
+        <Header />
+        <main>{children}</main>
       </body>
     </html>
   );
-} 
+}

@@ -1,19 +1,14 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-rgb: 0, 0, 0;
+  --foreground: 255 255 255;
+  --background: 0 0 0;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  color: rgb(var(--foreground));
+  background: rgb(var(--background));
   overflow-x: hidden;
-  font-family: 'Montserrat', sans-serif;
 }
 
 html, body {
@@ -23,21 +18,17 @@ html, body {
   padding: 0;
 }
 
-.hero-section {
-  background-color: white;
-  color: black;
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
 }
 
-.section-content {
-  background-color: black;
-  color: white;
-}
-
-/* Styles pour les boutons */
+/* Button styles */
 .btn-primary {
   background-color: transparent;
   color: white;
-  border: 1px solid white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 0.75rem 1.5rem;
   border-radius: 9999px;
   font-weight: 300;
@@ -48,6 +39,7 @@ html, body {
 .btn-primary:hover {
   background-color: white;
   color: black;
+  border-color: white;
 }
 
 .btn-dark {
@@ -63,4 +55,4 @@ html, body {
 
 .btn-dark:hover {
   background-color: rgba(0, 0, 0, 0.8);
-} 
+}
