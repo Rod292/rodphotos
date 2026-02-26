@@ -51,8 +51,11 @@ const Hero = () => {
   const rafRef = useRef(null);
   const lastTimeRef = useRef(null);
   const containerRef = useRef(null);
+  const thumbnailRefs = useRef([]);
+  const hasInitiallyAnimated = useRef(false);
 
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [sourceRect, setSourceRect] = useState(null);
 
   // Auto-rotation via requestAnimationFrame
   useEffect(() => {
@@ -124,18 +127,10 @@ const Hero = () => {
     }, 100);
   }, [rawAngle]);
 
-  const handlePhotoClick = useCallback((index) => {
-    if (didPan.current) return;
-    setSelectedPhoto(photos[index]);
-  }, []);
-
-  const handleCloseDetail = useCallback(() => {
-    setSelectedPhoto(null);
-    isInteracting.current = true;
-    clearTimeout(resumeTimeout.current);
-    resumeTimeout.current = setTimeout(() => {
-      isInteracting.current = false;
-    }, RESUME_DELAY);
+  // Mark initial animation as done
+  useEffect(() => {
+    const timer = setTimeout(() => { hasInitiallyAnimated.current = true; }, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Cleanup timeouts
@@ -147,7 +142,9 @@ const Hero = () => {
 
   const positions = useMemo(() => {
     const count = images.length;
-    const radius = Math.min(windowSize.width, windowSize.height) * 0.65;
+    const radius = isMobile
+      ? Math.max(windowSize.width, windowSize.height) * 1.1
+      : Math.min(windowSize.width, windowSize.height) * 0.65;
 
     return images.map((_, i) => {
       const angle = (i / count) * 360;
@@ -169,6 +166,34 @@ const Hero = () => {
     });
   }, [windowSize]);
 
+  const handlePhotoClick = useCallback((index) => {
+    if (didPan.current) return;
+    const el = thumbnailRefs.current[index];
+    if (el) {
+      const domRect = el.getBoundingClientRect();
+      const currentAngle = smoothAngle.get();
+      const itemRotation = positions[index]?.rotation || 0;
+      setSourceRect({
+        cx: domRect.x + domRect.width / 2,
+        cy: domRect.y + domRect.height / 2,
+        thumbWidth: Math.min(isMobile ? 280 : 250, windowSize.width * (isMobile ? 0.38 : 0.2)),
+        thumbHeight: Math.min(isMobile ? 390 : 350, windowSize.width * (isMobile ? 0.5 : 0.25)),
+        totalRotation: normalizeAngle(currentAngle + itemRotation),
+      });
+    }
+    setSelectedPhoto(photos[index]);
+  }, [smoothAngle, positions, isMobile, windowSize]);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedPhoto(null);
+    setSourceRect(null);
+    isInteracting.current = true;
+    clearTimeout(resumeTimeout.current);
+    resumeTimeout.current = setTimeout(() => {
+      isInteracting.current = false;
+    }, RESUME_DELAY);
+  }, []);
+
   return (
     <motion.section
       className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-white touch-none"
@@ -187,19 +212,23 @@ const Hero = () => {
             rotate: smoothAngle,
             originY: 0,
             originX: 0.5,
-            bottom: isMobile ? '25%' : '0',
+            bottom: isMobile ? '-20%' : '0',
           }}
         >
           {images.map((image, index) => (
             <motion.div
               key={image}
+              ref={(el) => { thumbnailRefs.current[index] = el; }}
               className="absolute cursor-pointer"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: index * 0.05 }}
+              animate={{ opacity: selectedPhoto?.id === photos[index].id ? 0 : 1 }}
+              transition={{
+                duration: selectedPhoto?.id === photos[index].id ? 0 : (hasInitiallyAnimated.current ? 0.3 : 0.8),
+                delay: hasInitiallyAnimated.current ? 0 : index * 0.05,
+              }}
               style={{
-                width: `${Math.min(isMobile ? 200 : 250, windowSize.width * (isMobile ? 0.22 : 0.2))}px`,
-                height: `${Math.min(isMobile ? 280 : 350, windowSize.width * (isMobile ? 0.28 : 0.25))}px`,
+                width: `${Math.min(isMobile ? 280 : 250, windowSize.width * (isMobile ? 0.38 : 0.2))}px`,
+                height: `${Math.min(isMobile ? 390 : 350, windowSize.width * (isMobile ? 0.5 : 0.25))}px`,
                 left: positions[index]?.x || 0,
                 top: positions[index]?.y || 0,
                 transform: `translate(-50%, -50%) rotate(${positions[index]?.rotation || 0}deg)`,
@@ -246,7 +275,7 @@ const Hero = () => {
 
       <AnimatePresence>
         {selectedPhoto && (
-          <PhotoDetail photo={selectedPhoto} onClose={handleCloseDetail} />
+          <PhotoDetail photo={selectedPhoto} sourceRect={sourceRect} onClose={handleCloseDetail} />
         )}
       </AnimatePresence>
     </motion.section>
