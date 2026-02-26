@@ -31,6 +31,9 @@ export const metadata = {
     description: 'Portfolio de photographie minimaliste par ROD, photographe breton.',
     images: ['/photos/DSCF5550.jpg'],
   },
+  icons: {
+    icon: '/favicon.svg',
+  },
   alternates: {
     canonical: '/',
   },
