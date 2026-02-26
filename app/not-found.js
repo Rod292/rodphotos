@@ -27,11 +27,11 @@ export default function NotFound() {
           Page introuvable
         </h1>
         <p className="text-zinc-500 font-light mb-10 leading-relaxed">
-          Cette page n&apos;existe pas ou a ete deplacee.
+          Cette page n&apos;existe pas ou a été déplacée.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/" className="btn-primary inline-block text-center">
-            Retour a l&apos;accueil
+            Retour à l&apos;accueil
           </Link>
           <Link href="/gallery" className="btn-primary inline-block text-center">
             Voir la galerie

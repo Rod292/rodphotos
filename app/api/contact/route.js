@@ -86,15 +86,24 @@ export async function POST(request) {
 
     const phoneLine = phone?.trim() ? `\nTéléphone: ${phone}` : '';
 
-    await resend.emails.send({
-      from: 'ROD Photos <onboarding@resend.dev>',
-      to: 'photos.pers@gmail.com',
+    const { data, error: sendError } = await resend.emails.send({
+      from: 'ROD Photos <contact@photosrod.com>',
+      to: 'contact@photosrod.com',
       replyTo: email,
       subject: `Nouveau message de ${name}`,
       text: `Nom: ${name}\nEmail: ${email}${phoneLine}\n\nMessage:\n${message}`,
       html: buildHtml({ name, email, phone, message }),
     });
 
+    if (sendError) {
+      console.error('Resend API error:', sendError);
+      return NextResponse.json(
+        { error: sendError.message || 'Erreur envoi email' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Email sent successfully:', data?.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Contact form error:', error);

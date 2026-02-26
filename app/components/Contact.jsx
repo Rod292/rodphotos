@@ -75,7 +75,7 @@ const Contact = () => {
           submitted: true,
           success: true,
           error: false,
-          message: 'Votre message a ete envoye avec succes. Je vous repondrai dans les plus brefs delais.',
+          message: 'Votre message a été envoyé avec succès. Je vous répondrai dans les plus brefs délais.',
         });
         setFormData({ name: '', email: '', phone: '', message: '' });
       } else {
@@ -83,7 +83,7 @@ const Contact = () => {
           submitted: true,
           success: false,
           error: true,
-          message: 'Une erreur est survenue. Veuillez reessayer ou me contacter directement par email.',
+          message: 'Une erreur est survenue. Veuillez réessayer ou me contacter directement par email.',
         });
       }
     } catch {
@@ -122,9 +122,9 @@ const Contact = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.1 }}
           >
-            <h2 className="text-xl font-light mb-6 tracking-tight">Echangeons</h2>
+            <h2 className="text-xl font-light mb-6 tracking-tight">Échangeons</h2>
             <p className="text-base text-zinc-400 mb-8 leading-relaxed max-w-[65ch]">
-              {"Pour l'achat d'un tirage, une demande de collaboration, un shooting ou simplement pour echanger sur la photographie, n'hesitez pas a me contacter."}
+              {"Pour l'achat d'un tirage, une demande de collaboration, un shooting ou simplement pour échanger sur la photographie, n'hésitez pas à me contacter."}
             </p>
 
             <div className="space-y-4 mb-10">
@@ -191,7 +191,7 @@ const Contact = () => {
                 transition={{ type: 'spring', stiffness: 200, damping: 20 }}
               >
                 <CheckCircle size={48} weight="light" className="mx-auto text-emerald-400 mb-4" />
-                <h3 className="text-xl font-light text-emerald-300 mb-2">Message envoye</h3>
+                <h3 className="text-xl font-light text-emerald-300 mb-2">Message envoyé</h3>
                 <p className="text-emerald-400/80 text-sm">{formStatus.message}</p>
               </motion.div>
             ) : (

@@ -298,7 +298,7 @@ const Hero = () => {
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
             >
-              Decouvrir la galerie
+              Découvrir la galerie
             </motion.span>
           </Link>
         </motion.div>
