@@ -2,6 +2,7 @@ import { Outfit } from 'next/font/google';
 import './styles/globals.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import MotionProvider from './components/MotionProvider';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -58,9 +59,11 @@ export default function RootLayout({ children }) {
         <a href="#main-content" className="skip-to-content">
           Aller au contenu principal
         </a>
-        <Header />
-        <main id="main-content">{children}</main>
-        <Footer />
+        <MotionProvider>
+          <Header />
+          <main id="main-content">{children}</main>
+          <Footer />
+        </MotionProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

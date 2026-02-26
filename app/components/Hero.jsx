@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useMemo, useSyncExternalStore, useState, useCallback } from 'react';
-import { motion, useMotionValue, useSpring, AnimatePresence } from 'motion/react';
+import { motion, useMotionValue, useSpring, AnimatePresence, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { photos } from '../data/photos';
@@ -35,6 +35,7 @@ const WHEEL_SENSITIVITY = 0.1;
 const RESUME_DELAY = 1000; // ms before auto-rotation resumes
 
 const Hero = () => {
+  const prefersReducedMotion = useReducedMotion();
   const sizeKey = useSyncExternalStore(subscribeResize, getWindowSnapshot, getServerSnapshot);
   const windowSize = useMemo(() => {
     const [w, h] = sizeKey.split(',').map(Number);
@@ -57,8 +58,10 @@ const Hero = () => {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [sourceRect, setSourceRect] = useState(null);
 
-  // Auto-rotation via requestAnimationFrame
+  // Auto-rotation via requestAnimationFrame (disabled when prefers-reduced-motion)
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     const tick = (timestamp) => {
       if (!lastTimeRef.current) lastTimeRef.current = timestamp;
       const delta = (timestamp - lastTimeRef.current) / 1000;
@@ -75,7 +78,7 @@ const Hero = () => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [rawAngle, selectedPhoto]);
+  }, [rawAngle, selectedPhoto, prefersReducedMotion]);
 
   // Wheel handler for desktop
   useEffect(() => {
@@ -223,8 +226,8 @@ const Hero = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: selectedPhoto?.id === photos[index].id ? 0 : 1 }}
               transition={{
-                duration: selectedPhoto?.id === photos[index].id ? 0 : (hasInitiallyAnimated.current ? 0.3 : 0.8),
-                delay: hasInitiallyAnimated.current ? 0 : index * 0.05,
+                duration: prefersReducedMotion ? 0 : (selectedPhoto?.id === photos[index].id ? 0 : (hasInitiallyAnimated.current ? 0.3 : 0.8)),
+                delay: prefersReducedMotion ? 0 : (hasInitiallyAnimated.current ? 0 : index * 0.05),
               }}
               style={{
                 width: `${Math.min(isMobile ? 250 : 250, windowSize.width * (isMobile ? 0.55 : 0.2))}px`,

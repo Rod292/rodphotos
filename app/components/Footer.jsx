@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className="bg-zinc-950 border-t border-zinc-800/50 py-8 px-4 md:px-10">
       <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-zinc-500 text-sm font-light tracking-wide">
+        <p className="text-zinc-400 text-sm font-light tracking-wide">
           &copy; {year} ROD Photographie
         </p>
         <div className="flex items-center gap-4">

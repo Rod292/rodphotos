@@ -210,6 +210,7 @@ const Contact = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
+                    required
                     className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 transition-all ${
                       errors.name ? 'border-red-500/60' : 'border-zinc-800 focus:border-zinc-600'
                     }`}
@@ -231,6 +232,7 @@ const Contact = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    required
                     className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 transition-all ${
                       errors.email ? 'border-red-500/60' : 'border-zinc-800 focus:border-zinc-600'
                     }`}
@@ -266,6 +268,7 @@ const Contact = () => {
                     rows="5"
                     value={formData.message}
                     onChange={handleChange}
+                    required
                     className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 transition-all resize-none ${
                       errors.message ? 'border-red-500/60' : 'border-zinc-800 focus:border-zinc-600'
                     }`}

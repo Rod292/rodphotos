@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
-import { motion, useMotionValue } from 'motion/react';
+import { motion, useMotionValue, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, CaretLeft, CaretRight, ShareNetwork, Check, Play, Pause } from '@phosphor-icons/react';
@@ -13,6 +13,7 @@ const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
 
 const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, nextPhoto, navigationInfo, isFavorite, onToggleFavorite }) => {
+  const prefersReducedMotion = useReducedMotion();
   const photoContainerRef = useRef(null);
   const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
@@ -223,8 +224,15 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
     }
   }, [photo]);
 
-  // FLIP initial transform
+  // FLIP initial transform (skip when prefers-reduced-motion)
   const flipInitial = useMemo(() => {
+    if (prefersReducedMotion) {
+      return {
+        scaleX: 1, scaleY: 1, x: 0, y: 0,
+        rotate: 0, rotateY: 0, borderRadius: '0rem', opacity: 1,
+      };
+    }
+
     if (!sourceRect) {
       return {
         scaleX: 0.3, scaleY: 0.3, x: 0, y: 0,
@@ -263,7 +271,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
       rotate: sourceRect.totalRotation || 0, rotateY: 0,
       borderRadius: '0.5rem', opacity: 1,
     };
-  }, [sourceRect]);
+  }, [sourceRect, prefersReducedMotion]);
 
   return (
     <motion.div
@@ -419,7 +427,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
           )}
 
           {navigationInfo && (
-            <p className="text-zinc-600 text-sm font-light tracking-widest mb-6">{navigationInfo}</p>
+            <p className="text-zinc-500 text-sm font-light tracking-widest mb-6">{navigationInfo}</p>
           )}
 
           {/* Share button */}
