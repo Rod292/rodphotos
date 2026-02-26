@@ -426,9 +426,24 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
             </div>
           )}
 
-          {navigationInfo && (
-            <p className="text-zinc-500 text-sm font-light tracking-widest mb-6">{navigationInfo}</p>
-          )}
+          {navigationInfo && (() => {
+            const parts = navigationInfo.split(' / ');
+            const current = parseInt(parts[0], 10);
+            const total = parseInt(parts[1], 10);
+            return (
+              <div className="mb-6">
+                <p className="text-zinc-500 text-sm font-light tracking-widest mb-2">{navigationInfo}</p>
+                <div className="w-full max-w-[200px] h-px bg-zinc-800 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-zinc-500"
+                    initial={false}
+                    animate={{ width: `${(current / total) * 100}%` }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Share button */}
           <button

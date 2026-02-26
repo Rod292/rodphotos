@@ -257,13 +257,13 @@
 
 ### Accessibilité avancée
 
-- [ ] **Audit WCAG 2.1 AA complet et corrections**
+- [x] **Audit WCAG 2.1 AA complet et corrections**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : tous les composants
   - Passer un audit complet (axe-core, Lighthouse Accessibility). Corriger les éventuels problèmes de contraste, rôles ARIA manquants, navigation clavier incomplète.
 
-- [ ] **Ajouter le support `prefers-reduced-motion`**
+- [x] **Ajouter le support `prefers-reduced-motion`**
   - Priorité : Moyenne
   - Complexité : Faible
   - Fichiers : `app/components/Hero.jsx`, `app/components/PhotoDetail.jsx`, `app/components/Header.jsx`
@@ -283,7 +283,7 @@
   - Fichiers : `__tests__/` (à créer), `package.json`
   - Configurer Vitest + React Testing Library. Tests des composants clés (Gallery, Contact form, PhotoDetail). Tests de l'API contact.
 
-- [ ] **Configurer un pipeline CI/CD (GitHub Actions)**
+- [x] **Configurer un pipeline CI/CD (GitHub Actions)**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `.github/workflows/ci.yml` (à créer)
@@ -328,10 +328,10 @@
 | Moyenne | CMS headless | 3 |
 | Moyenne | ISR | 3 |
 | Moyenne | CDN images | 3 |
-| Moyenne | Audit WCAG | 3 |
-| Moyenne | `prefers-reduced-motion` | 3 |
+| ~~Moyenne~~ | ~~Audit WCAG~~ | ~~3~~ |
+| ~~Moyenne~~ | ~~`prefers-reduced-motion`~~ | ~~3~~ |
 | Moyenne | Tests unitaires | 3 |
-| Moyenne | CI/CD pipeline | 3 |
+| ~~Moyenne~~ | ~~CI/CD pipeline~~ | ~~3~~ |
 | Faible | Skip to content | 1 |
 | Faible | Bouton retour en haut | 1 |
 | ~~Faible~~ | ~~Favoris localStorage~~ | ~~2~~ |
