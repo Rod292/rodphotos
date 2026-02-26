@@ -3,13 +3,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
-import { X, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { photos, categories } from '../data/photos';
+import PhotoDetail from './PhotoDetail';
 
 const Gallery = () => {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [filter, setFilter] = useState('all');
-  const modalRef = useRef(null);
+  const [sourceRect, setSourceRect] = useState(null);
+  const thumbnailRefs = useRef([]);
 
   const filteredImages = filter === 'all'
     ? photos
@@ -17,17 +18,25 @@ const Gallery = () => {
 
   const selectedImage = selectedIndex !== null ? filteredImages[selectedIndex] : null;
 
-  const openImage = (index) => {
+  const openImage = useCallback((index) => {
+    const el = thumbnailRefs.current[index];
+    if (el) {
+      const domRect = el.getBoundingClientRect();
+      setSourceRect({
+        cx: domRect.x + domRect.width / 2,
+        cy: domRect.y + domRect.height / 2,
+        thumbWidth: domRect.width,
+        thumbHeight: domRect.height,
+        totalRotation: 0,
+      });
+    }
     setSelectedIndex(index);
-  };
+  }, []);
 
   const closeImage = useCallback(() => {
     setSelectedIndex(null);
+    setSourceRect(null);
   }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = selectedIndex !== null ? 'hidden' : '';
-  }, [selectedIndex]);
 
   const goNext = useCallback(() => {
     setSelectedIndex(prev =>
@@ -40,27 +49,6 @@ const Gallery = () => {
       prev !== null ? (prev - 1 + filteredImages.length) % filteredImages.length : null
     );
   }, [filteredImages.length]);
-
-  useEffect(() => {
-    if (selectedIndex === null) return;
-
-    const handleKeyDown = (e) => {
-      switch (e.key) {
-        case 'Escape': closeImage(); break;
-        case 'ArrowRight': goNext(); break;
-        case 'ArrowLeft': goPrev(); break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, closeImage, goNext, goPrev]);
-
-  useEffect(() => {
-    if (selectedIndex !== null && modalRef.current) {
-      modalRef.current.focus();
-    }
-  }, [selectedIndex]);
 
   useEffect(() => {
     return () => { document.body.style.overflow = ''; };
@@ -127,6 +115,7 @@ const Gallery = () => {
             {filteredImages.map((image, index) => (
               <motion.div
                 key={image.path}
+                ref={(el) => { thumbnailRefs.current[index] = el; }}
                 className={`relative overflow-hidden rounded-lg cursor-pointer group ${image.gallerySpan || ''}`}
                 variants={{
                   hidden: { opacity: 0, scale: 0.95 },
@@ -164,82 +153,16 @@ const Gallery = () => {
         )}
       </div>
 
-      {/* Fullscreen modal */}
       <AnimatePresence>
         {selectedImage && (
-          <motion.div
-            ref={modalRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${selectedImage.alt} — Image ${selectedIndex + 1} sur ${filteredImages.length}`}
-            tabIndex={-1}
-            className="fixed inset-0 z-50 bg-zinc-950/95 backdrop-blur-sm flex items-center justify-center outline-hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={closeImage}
-          >
-            {/* Close */}
-            <motion.button
-              className="absolute top-6 right-6 text-zinc-500 hover:text-zinc-100 z-10 p-2 transition-colors"
-              onClick={closeImage}
-              aria-label="Fermer"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
-              <X size={28} weight="light" />
-            </motion.button>
-
-            {/* Previous */}
-            <motion.button
-              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-100 z-10 p-2 transition-colors"
-              onClick={(e) => { e.stopPropagation(); goPrev(); }}
-              aria-label="Image precedente"
-              whileHover={{ scale: 1.1, x: -4 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
-              <CaretLeft size={36} weight="light" />
-            </motion.button>
-
-            {/* Next */}
-            <motion.button
-              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-100 z-10 p-2 transition-colors"
-              onClick={(e) => { e.stopPropagation(); goNext(); }}
-              aria-label="Image suivante"
-              whileHover={{ scale: 1.1, x: 4 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            >
-              <CaretRight size={36} weight="light" />
-            </motion.button>
-
-            {/* Image */}
-            <motion.div
-              className="relative w-full h-full max-w-5xl max-h-[90vh] flex items-center justify-center p-12"
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-            >
-              <Image
-                src={selectedImage.path}
-                alt={selectedImage.alt}
-                fill
-                sizes="100vw"
-                className="object-contain"
-                priority
-              />
-            </motion.div>
-
-            {/* Counter */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-zinc-600 text-sm font-light tracking-widest">
-              {selectedIndex + 1} / {filteredImages.length}
-            </div>
-          </motion.div>
+          <PhotoDetail
+            photo={selectedImage}
+            sourceRect={sourceRect}
+            onClose={closeImage}
+            onNext={goNext}
+            onPrev={goPrev}
+            navigationInfo={`${selectedIndex + 1} / ${filteredImages.length}`}
+          />
         )}
       </AnimatePresence>
     </motion.section>

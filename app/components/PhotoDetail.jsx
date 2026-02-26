@@ -4,14 +4,16 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { X } from '@phosphor-icons/react';
+import { X, CaretLeft, CaretRight } from '@phosphor-icons/react';
 
-const PhotoDetail = ({ photo, sourceRect, onClose }) => {
+const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInfo }) => {
   const photoContainerRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight' && onNext) onNext();
+      if (e.key === 'ArrowLeft' && onPrev) onPrev();
     };
     window.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
@@ -19,7 +21,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose }) => {
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [onClose]);
+  }, [onClose, onNext, onPrev]);
 
   // Compute FLIP initial transform from sourceRect
   const flipInitial = useMemo(() => {
@@ -37,10 +39,6 @@ const PhotoDetail = ({ photo, sourceRect, onClose }) => {
       };
     }
 
-    // Target: the photo container will be positioned in the left half of the modal
-    // We need to compute where the photo ends up on screen
-    // The photo container is w-1/2 of the modal (max-w-6xl = 1152px) centered on screen
-    // On mobile it's full width, top half
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const isMobile = vw < 768;
@@ -48,16 +46,14 @@ const PhotoDetail = ({ photo, sourceRect, onClose }) => {
     let targetCx, targetCy, targetW, targetH;
 
     if (isMobile) {
-      // Full width, min-h-[50vh] at top
       targetW = vw;
       targetH = vh * 0.5;
       targetCx = vw / 2;
       targetCy = targetH / 2;
     } else {
-      // Modal is max-w-6xl (1152px) centered, photo is left half
-      const modalW = Math.min(1152, vw - 64); // md:mx-8 = 32px each side
+      const modalW = Math.min(1152, vw - 64);
       const photoW = modalW / 2;
-      const photoH = vh * 0.8; // min-h-[80vh]
+      const photoH = vh * 0.8;
       targetCx = vw / 2 - modalW / 2 + photoW / 2;
       targetCy = vh / 2;
       targetW = photoW;
@@ -74,7 +70,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose }) => {
       y: dy,
       scaleX: sx,
       scaleY: sy,
-      rotate: sourceRect.totalRotation,
+      rotate: sourceRect.totalRotation || 0,
       rotateY: 0,
       borderRadius: '0.5rem',
       opacity: 1,
@@ -105,6 +101,30 @@ const PhotoDetail = ({ photo, sourceRect, onClose }) => {
       >
         <X size={28} weight="light" />
       </motion.button>
+
+      {/* Navigation arrows */}
+      {onPrev && (
+        <motion.button
+          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+          onClick={(e) => { e.stopPropagation(); onPrev(); }}
+          aria-label="Image précédente"
+          whileHover={{ scale: 1.1, x: -4 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <CaretLeft size={36} weight="light" />
+        </motion.button>
+      )}
+      {onNext && (
+        <motion.button
+          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+          onClick={(e) => { e.stopPropagation(); onNext(); }}
+          aria-label="Image suivante"
+          whileHover={{ scale: 1.1, x: 4 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <CaretRight size={36} weight="light" />
+        </motion.button>
+      )}
 
       {/* Content */}
       <div className="relative z-10 flex flex-col md:flex-row w-full h-full md:h-auto md:max-h-[90vh] md:max-w-6xl md:mx-8 overflow-y-auto md:overflow-hidden">
@@ -175,6 +195,10 @@ const PhotoDetail = ({ photo, sourceRect, onClose }) => {
                 <span className="text-zinc-300">ISO</span> — {photo.technical.iso}
               </p>
             </div>
+          )}
+
+          {navigationInfo && (
+            <p className="text-zinc-600 text-sm font-light tracking-widest mb-6">{navigationInfo}</p>
           )}
 
           {photo.purchaseUrl ? (

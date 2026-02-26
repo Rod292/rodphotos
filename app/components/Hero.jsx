@@ -143,7 +143,7 @@ const Hero = () => {
   const positions = useMemo(() => {
     const count = images.length;
     const radius = isMobile
-      ? Math.max(windowSize.width, windowSize.height) * 1.1
+      ? windowSize.height * 0.7
       : Math.min(windowSize.width, windowSize.height) * 0.65;
 
     return images.map((_, i) => {
@@ -176,8 +176,8 @@ const Hero = () => {
       setSourceRect({
         cx: domRect.x + domRect.width / 2,
         cy: domRect.y + domRect.height / 2,
-        thumbWidth: Math.min(isMobile ? 280 : 250, windowSize.width * (isMobile ? 0.38 : 0.2)),
-        thumbHeight: Math.min(isMobile ? 390 : 350, windowSize.width * (isMobile ? 0.5 : 0.25)),
+        thumbWidth: Math.min(isMobile ? 250 : 250, windowSize.width * (isMobile ? 0.55 : 0.2)),
+        thumbHeight: Math.min(isMobile ? 340 : 350, windowSize.width * (isMobile ? 0.75 : 0.25)),
         totalRotation: normalizeAngle(currentAngle + itemRotation),
       });
     }
@@ -212,7 +212,7 @@ const Hero = () => {
             rotate: smoothAngle,
             originY: 0,
             originX: 0.5,
-            bottom: isMobile ? '-20%' : '0',
+            bottom: isMobile ? '-10%' : '0',
           }}
         >
           {images.map((image, index) => (
@@ -227,8 +227,8 @@ const Hero = () => {
                 delay: hasInitiallyAnimated.current ? 0 : index * 0.05,
               }}
               style={{
-                width: `${Math.min(isMobile ? 280 : 250, windowSize.width * (isMobile ? 0.38 : 0.2))}px`,
-                height: `${Math.min(isMobile ? 390 : 350, windowSize.width * (isMobile ? 0.5 : 0.25))}px`,
+                width: `${Math.min(isMobile ? 250 : 250, windowSize.width * (isMobile ? 0.55 : 0.2))}px`,
+                height: `${Math.min(isMobile ? 340 : 350, windowSize.width * (isMobile ? 0.75 : 0.25))}px`,
                 left: positions[index]?.x || 0,
                 top: positions[index]?.y || 0,
                 transform: `translate(-50%, -50%) rotate(${positions[index]?.rotation || 0}deg)`,
@@ -252,6 +252,33 @@ const Hero = () => {
 
         {/* Gradient for button readability */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white via-white/60 to-transparent z-30 pointer-events-none" />
+
+        {/* Swipe hint — mobile only */}
+        {isMobile && (
+          <motion.div
+            className="absolute z-40 flex items-center gap-3 text-zinc-400"
+            style={{ bottom: '14%' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 1, 0] }}
+            transition={{ duration: 8, delay: 1.5, times: [0, 0.05, 0.85, 1] }}
+          >
+            <motion.svg
+              width="18" height="18" viewBox="0 0 18 18" fill="none"
+              animate={{ x: [0, -4, 0] }}
+              transition={{ repeat: Infinity, duration: 1, ease: 'easeInOut' }}
+            >
+              <path d="M11 3L5 9L11 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </motion.svg>
+            <span className="text-xs tracking-widest uppercase">Glissez &amp; cliquez sur les images</span>
+            <motion.svg
+              width="18" height="18" viewBox="0 0 18 18" fill="none"
+              animate={{ x: [0, 4, 0] }}
+              transition={{ repeat: Infinity, duration: 1, ease: 'easeInOut' }}
+            >
+              <path d="M7 3L13 9L7 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </motion.svg>
+          </motion.div>
+        )}
 
         <motion.div
           className="absolute z-40 flex flex-col sm:flex-row gap-4"
