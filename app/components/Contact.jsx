@@ -1,13 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { Envelope, MapPin, InstagramLogo, CheckCircle } from '@phosphor-icons/react';
+import { photos } from '../data/photos';
 
 const Contact = () => {
+  const searchParams = useSearchParams();
+  const photoId = searchParams.get('photo');
+  const selectedPhoto = photoId ? photos.find(p => p.id === photoId) : null;
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     message: '',
   });
   const [formStatus, setFormStatus] = useState({
@@ -18,6 +26,15 @@ const Contact = () => {
   });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (selectedPhoto) {
+      setFormData(prev => ({
+        ...prev,
+        message: `Bonjour,\n\nJe souhaite obtenir des renseignements concernant la photo « ${selectedPhoto.title} » (réf: ${selectedPhoto.id}).\n\nMerci.`,
+      }));
+    }
+  }, [selectedPhoto]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,7 +77,7 @@ const Contact = () => {
           error: false,
           message: 'Votre message a ete envoye avec succes. Je vous repondrai dans les plus brefs delais.',
         });
-        setFormData({ name: '', email: '', message: '' });
+        setFormData({ name: '', email: '', phone: '', message: '' });
       } else {
         setFormStatus({
           submitted: true,
@@ -99,7 +116,7 @@ const Contact = () => {
         </motion.h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
-          {/* Contact info */}
+          {/* Left column: contact info + photo if selected */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -119,12 +136,12 @@ const Contact = () => {
               </div>
               <div className="flex items-center gap-3">
                 <MapPin size={20} weight="light" className="text-zinc-500" />
-                <span className="text-zinc-400">Nantes, France</span>
+                <span className="text-zinc-400">Bretagne, France</span>
               </div>
             </div>
 
             <h3 className="text-lg font-light mb-4 tracking-tight">Suivez-moi</h3>
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-10">
               <a
                 href="https://instagram.com/pcklerod"
                 target="_blank"
@@ -135,6 +152,29 @@ const Contact = () => {
                 <InstagramLogo size={24} weight="light" />
               </a>
             </div>
+
+            {/* Photo preview — left column on desktop */}
+            {selectedPhoto && (
+              <motion.div
+                className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-4 overflow-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.15 }}
+              >
+                <div className="rounded-lg overflow-hidden mb-4">
+                  <Image
+                    src={selectedPhoto.path}
+                    alt={selectedPhoto.alt}
+                    width={600}
+                    height={800}
+                    sizes="(max-width: 768px) 100vw, 40vw"
+                    className="w-full h-auto max-h-[280px] object-contain"
+                  />
+                </div>
+                <p className="text-sm text-zinc-300 font-light">{selectedPhoto.title}</p>
+                <p className="text-xs text-zinc-500 mt-1">Réf: {selectedPhoto.id}</p>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Form */}
@@ -200,6 +240,20 @@ const Contact = () => {
                   {errors.email && (
                     <p id="email-error" className="mt-1.5 text-sm text-red-400/80" role="alert">{errors.email}</p>
                   )}
+                </div>
+
+                <div>
+                  <label htmlFor="phone" className="block text-sm text-zinc-400 mb-2">
+                    Téléphone <span className="text-zinc-600">(optionnel)</span>
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 focus:border-zinc-600 transition-all"
+                  />
                 </div>
 
                 <div>

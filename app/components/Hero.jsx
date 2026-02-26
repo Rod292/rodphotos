@@ -32,7 +32,7 @@ function getServerSnapshot() {
 const ROTATION_SPEED = 3; // degrees per second (360° / 120s)
 const PAN_SENSITIVITY = 0.3; // pixels to degrees ratio
 const WHEEL_SENSITIVITY = 0.1;
-const RESUME_DELAY = 3000; // ms before auto-rotation resumes
+const RESUME_DELAY = 1000; // ms before auto-rotation resumes
 
 const Hero = () => {
   const sizeKey = useSyncExternalStore(subscribeResize, getWindowSnapshot, getServerSnapshot);

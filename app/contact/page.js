@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Contact from '../components/Contact';
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function ContactPage() {
-  return <Contact />;
+  return (
+    <Suspense>
+      <Contact />
+    </Suspense>
+  );
 }
