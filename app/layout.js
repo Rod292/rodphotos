@@ -1,7 +1,7 @@
 import { Outfit } from 'next/font/google';
 import './styles/globals.css';
 import Header from './components/Header';
-import Footer from './components/Footer';
+import ConditionalFooter from './components/ConditionalFooter';
 import MotionProvider from './components/MotionProvider';
 
 const outfit = Outfit({
@@ -62,7 +62,7 @@ export default function RootLayout({ children }) {
         <MotionProvider>
           <Header />
           <main id="main-content">{children}</main>
-          <Footer />
+          <ConditionalFooter />
         </MotionProvider>
         <script
           dangerouslySetInnerHTML={{
