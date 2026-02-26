@@ -4,35 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
 import { X, CaretLeft, CaretRight } from '@phosphor-icons/react';
-
-const imageData = [
-  { name: 'A7403945.jpg', category: 'landscape', alt: 'Paysage naturel', span: 'col-span-2 row-span-2' },
-  { name: 'A7404333.jpg', category: 'travel', alt: 'Voyage', span: '' },
-  { name: 'A7407595.jpg', category: 'landscape', alt: 'Paysage', span: '' },
-  { name: 'DSCF0726.jpg', category: 'street', alt: 'Photographie de rue', span: '' },
-  { name: 'DSCF2813.jpg', category: 'portrait', alt: 'Portrait', span: 'col-span-2 row-span-2' },
-  { name: 'DSCF5027.jpg', category: 'travel', alt: 'Voyage', span: '' },
-  { name: 'DSCF5068.jpg', category: 'street', alt: 'Photographie de rue', span: '' },
-  { name: 'DSCF5448.jpg', category: 'portrait', alt: 'Portrait', span: '' },
-  { name: 'DSCF5470.jpg', category: 'landscape', alt: 'Paysage', span: 'col-span-2 row-span-2' },
-  { name: 'DSCF5481.jpg', category: 'travel', alt: 'Voyage', span: '' },
-  { name: 'DSCF5513.jpg', category: 'street', alt: 'Photographie de rue', span: '' },
-  { name: 'DSCF5550.jpg', category: 'portrait', alt: 'Portrait', span: '' },
-  { name: 'DSCF5660.jpg', category: 'landscape', alt: 'Paysage', span: '' },
-  { name: 'DSCF7190.jpg', category: 'travel', alt: 'Voyage', span: '' },
-  { name: 'DSCF7196.jpg', category: 'street', alt: 'Photographie de rue', span: 'col-span-2 row-span-2' },
-  { name: 'DSCF7645.jpg', category: 'portrait', alt: 'Portrait', span: '' },
-  { name: 'DSCF7749.jpg', category: 'landscape', alt: 'Paysage', span: '' },
-  { name: 'IMG_9816.jpg', category: 'travel', alt: 'Voyage', span: '' },
-].map(img => ({ ...img, path: `/photos/${img.name}` }));
-
-const categories = [
-  { id: 'all', label: 'Toutes' },
-  { id: 'landscape', label: 'Paysages' },
-  { id: 'portrait', label: 'Portraits' },
-  { id: 'street', label: 'Street' },
-  { id: 'travel', label: 'Voyage' },
-];
+import { photos, categories } from '../data/photos';
 
 const Gallery = () => {
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -40,8 +12,8 @@ const Gallery = () => {
   const modalRef = useRef(null);
 
   const filteredImages = filter === 'all'
-    ? imageData
-    : imageData.filter(img => img.category === filter);
+    ? photos
+    : photos.filter(img => img.category === filter);
 
   const selectedImage = selectedIndex !== null ? filteredImages[selectedIndex] : null;
 
@@ -155,7 +127,7 @@ const Gallery = () => {
             {filteredImages.map((image, index) => (
               <motion.div
                 key={image.path}
-                className={`relative overflow-hidden rounded-lg cursor-pointer group ${image.span || ''}`}
+                className={`relative overflow-hidden rounded-lg cursor-pointer group ${image.gallerySpan || ''}`}
                 variants={{
                   hidden: { opacity: 0, scale: 0.95 },
                   visible: { opacity: 1, scale: 1 },

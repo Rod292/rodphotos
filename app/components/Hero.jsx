@@ -1,19 +1,20 @@
 'use client';
 
-import React, { useEffect, useRef, useMemo, useSyncExternalStore } from 'react';
-import { motion, useAnimation } from 'motion/react';
+import React, { useEffect, useRef, useMemo, useSyncExternalStore, useState, useCallback } from 'react';
+import { motion, useMotionValue, useSpring, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { photos } from '../data/photos';
+import PhotoDetail from './PhotoDetail';
 
-const imageNames = [
-  'A7403945.jpg', 'A7404333.jpg', 'A7407595.jpg',
-  'DSCF0726.jpg', 'DSCF2813.jpg', 'DSCF5027.jpg',
-  'DSCF5068.jpg', 'DSCF5448.jpg', 'DSCF5470.jpg',
-  'DSCF5481.jpg', 'DSCF5513.jpg', 'DSCF5550.jpg',
-  'DSCF5660.jpg', 'DSCF7190.jpg', 'DSCF7196.jpg',
-  'DSCF7645.jpg', 'DSCF7749.jpg', 'IMG_9816.jpg',
-];
-const images = imageNames.map(name => `/photos/${name}`);
+const images = photos.map(p => p.path);
+
+function normalizeAngle(deg) {
+  let a = deg % 360;
+  if (a > 180) a -= 360;
+  if (a < -180) a += 360;
+  return a;
+}
 
 function subscribeResize(callback) {
   window.addEventListener('resize', callback);
@@ -28,6 +29,11 @@ function getServerSnapshot() {
   return '1200,800';
 }
 
+const ROTATION_SPEED = 3; // degrees per second (360° / 120s)
+const PAN_SENSITIVITY = 0.3; // pixels to degrees ratio
+const WHEEL_SENSITIVITY = 0.1;
+const RESUME_DELAY = 3000; // ms before auto-rotation resumes
+
 const Hero = () => {
   const sizeKey = useSyncExternalStore(subscribeResize, getWindowSnapshot, getServerSnapshot);
   const windowSize = useMemo(() => {
@@ -35,20 +41,107 @@ const Hero = () => {
     return { width: w, height: h };
   }, [sizeKey]);
 
-  const controls = useAnimation();
+  const rawAngle = useMotionValue(0);
+  const smoothAngle = useSpring(rawAngle, { stiffness: 100, damping: 30 });
+
+  const isInteracting = useRef(false);
+  const resumeTimeout = useRef(null);
+  const didPan = useRef(false);
+  const panStartAngle = useRef(0);
+  const rafRef = useRef(null);
+  const lastTimeRef = useRef(null);
   const containerRef = useRef(null);
 
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+
+  // Auto-rotation via requestAnimationFrame
   useEffect(() => {
-    controls.start({
-      rotate: 360,
-      transition: {
-        duration: 120,
-        ease: 'linear',
-        repeat: Infinity,
-        repeatType: 'loop',
-      },
-    });
-  }, [controls]);
+    const tick = (timestamp) => {
+      if (!lastTimeRef.current) lastTimeRef.current = timestamp;
+      const delta = (timestamp - lastTimeRef.current) / 1000;
+      lastTimeRef.current = timestamp;
+
+      if (!isInteracting.current && !selectedPhoto) {
+        rawAngle.set(rawAngle.get() + ROTATION_SPEED * delta);
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [rawAngle, selectedPhoto]);
+
+  // Wheel handler for desktop
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e) => {
+      if (selectedPhoto) return;
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      rawAngle.set(rawAngle.get() + delta * WHEEL_SENSITIVITY);
+
+      isInteracting.current = true;
+      clearTimeout(resumeTimeout.current);
+      resumeTimeout.current = setTimeout(() => {
+        isInteracting.current = false;
+      }, RESUME_DELAY);
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: true });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [rawAngle, selectedPhoto]);
+
+  const handlePanStart = useCallback(() => {
+    panStartAngle.current = rawAngle.get();
+    didPan.current = false;
+    isInteracting.current = true;
+    clearTimeout(resumeTimeout.current);
+  }, [rawAngle]);
+
+  const handlePan = useCallback((_, info) => {
+    if (Math.abs(info.offset.x) > 5 || Math.abs(info.offset.y) > 5) {
+      didPan.current = true;
+    }
+    rawAngle.set(panStartAngle.current + info.offset.x * PAN_SENSITIVITY);
+  }, [rawAngle]);
+
+  const handlePanEnd = useCallback((_, info) => {
+    // Apply inertia: project velocity forward
+    const velocity = info.velocity.x * PAN_SENSITIVITY;
+    rawAngle.set(rawAngle.get() + velocity * 0.3);
+
+    resumeTimeout.current = setTimeout(() => {
+      isInteracting.current = false;
+    }, RESUME_DELAY);
+
+    // Reset didPan after click events have fired
+    setTimeout(() => {
+      didPan.current = false;
+    }, 100);
+  }, [rawAngle]);
+
+  const handlePhotoClick = useCallback((index) => {
+    if (didPan.current) return;
+    setSelectedPhoto(photos[index]);
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedPhoto(null);
+    isInteracting.current = true;
+    clearTimeout(resumeTimeout.current);
+    resumeTimeout.current = setTimeout(() => {
+      isInteracting.current = false;
+    }, RESUME_DELAY);
+  }, []);
+
+  // Cleanup timeouts
+  useEffect(() => {
+    return () => clearTimeout(resumeTimeout.current);
+  }, []);
 
   const isMobile = windowSize.width < 768;
 
@@ -78,17 +171,20 @@ const Hero = () => {
 
   return (
     <motion.section
-      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-white"
+      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-white touch-none"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       ref={containerRef}
+      onPanStart={handlePanStart}
+      onPan={handlePan}
+      onPanEnd={handlePanEnd}
     >
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden" style={{ minHeight: '100dvh' }}>
         <motion.div
           className="absolute bottom-0 left-1/2 -translate-x-1/2"
-          animate={controls}
           style={{
+            rotate: smoothAngle,
             originY: 0,
             originX: 0.5,
             bottom: isMobile ? '25%' : '0',
@@ -97,7 +193,7 @@ const Hero = () => {
           {images.map((image, index) => (
             <motion.div
               key={image}
-              className="absolute"
+              className="absolute cursor-pointer"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: index * 0.05 }}
@@ -109,11 +205,12 @@ const Hero = () => {
                 transform: `translate(-50%, -50%) rotate(${positions[index]?.rotation || 0}deg)`,
                 zIndex: positions[index]?.zIndex || 0,
               }}
+              onClick={() => handlePhotoClick(index)}
             >
               <div className="w-full h-full relative rounded-lg shadow-lg overflow-hidden">
                 <Image
                   src={image}
-                  alt={`Photographie ${index + 1}`}
+                  alt={photos[index].alt}
                   fill
                   sizes="(max-width: 768px) 200px, 250px"
                   className="object-cover"
@@ -146,6 +243,12 @@ const Hero = () => {
           </Link>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {selectedPhoto && (
+          <PhotoDetail photo={selectedPhoto} onClose={handleCloseDetail} />
+        )}
+      </AnimatePresence>
     </motion.section>
   );
 };

@@ -50,16 +50,16 @@ const About = () => {
             <h2 className="text-3xl md:text-4xl tracking-tighter font-light mb-6">ROD</h2>
             <div className="space-y-4 max-w-[65ch]">
               <p className="text-base text-zinc-400 leading-relaxed">
-                Je suis ROD, un photographe breton de 24 ans passionne par la capture de moments simples, la nature, et les couleurs uniques du film argentique.
+                Je suis ROD, un photographe breton de 25 ans passionné par la capture de moments simples, la nature, et les couleurs uniques du film argentique.
               </p>
               <p className="text-base text-zinc-400 leading-relaxed">
-                {"Mon approche photographique se concentre sur la beaute du quotidien, les paysages naturels et l'authenticite des instants captures. J'aime particulierement travailler avec la photographie argentique pour sa richesse de tons et son caractere inimitable."}
+                {"Mon approche photographique se concentre sur la beauté du quotidien, les paysages naturels et l'authenticité des instants capturés. J'aime particulierement travailler avec la photographie argentique pour sa richesse de tons et son caractere inimitable."}
               </p>
               <p className="text-base text-zinc-400 leading-relaxed">
-                {"Je realise egalement des photos de surf, capturant l'energie des vagues et la passion des surfeurs en action."}
+                {"Je réalise également des photos de surf, capturant l'énergie des vagues et la passion des surfeurs en action."}
               </p>
               <p className="text-base text-zinc-400 leading-relaxed">
-                {"Je propose mes photos a la vente et je realise egalement des seances photo de style lifestyle pour vos futures campagnes. N'hesitez pas a me contacter pour discuter de vos projets ou pour acquerir mes oeuvres."}
+                {"Je propose mes photos a la vente et je réalise également des séances photo de style lifestyle pour vos futures campagnes. N'hésitez pas a me contacter pour discuter de vos projets ou pour acquerir mes oeuvres."}
               </p>
             </div>
 
