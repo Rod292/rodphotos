@@ -244,6 +244,7 @@ const Hero = () => {
                   sizes="(max-width: 768px) 200px, 250px"
                   className="object-cover"
                   priority={index < 3}
+                  {...(index === 0 ? { fetchPriority: 'high' } : {})}
                 />
               </div>
             </motion.div>

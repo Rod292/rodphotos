@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
+import { ArrowUp } from '@phosphor-icons/react';
 import { photos, categories } from '../data/photos';
 import PhotoDetail from './PhotoDetail';
 
@@ -10,6 +11,8 @@ const Gallery = () => {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [filter, setFilter] = useState('all');
   const [sourceRect, setSourceRect] = useState(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState({});
   const thumbnailRefs = useRef([]);
 
   const filteredImages = filter === 'all'
@@ -54,6 +57,30 @@ const Gallery = () => {
     return () => { document.body.style.overflow = ''; };
   }, []);
 
+  // Back to top scroll listener
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 600);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Reset loaded images when filter changes
+  useEffect(() => {
+    setImagesLoaded({});
+  }, [filter]);
+
+  const handleImageLoad = useCallback((imageId) => {
+    setImagesLoaded(prev => ({ ...prev, [imageId]: true }));
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const currentCategoryLabel = categories.find(c => c.id === filter)?.label || 'Toutes';
+
   return (
     <motion.section
       className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950 text-zinc-100"
@@ -73,6 +100,8 @@ const Gallery = () => {
 
         <motion.div
           className="flex flex-wrap gap-2 md:gap-3 mb-10"
+          role="toolbar"
+          aria-label="Filtrer par catégorie"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.1 }}
@@ -81,6 +110,7 @@ const Gallery = () => {
             <motion.button
               key={category.id}
               onClick={() => setFilter(category.id)}
+              aria-pressed={filter === category.id}
               className={`relative px-5 py-2 rounded-full text-sm tracking-wide transition-colors ${
                 filter === category.id
                   ? 'text-zinc-950'
@@ -102,6 +132,10 @@ const Gallery = () => {
           ))}
         </motion.div>
 
+        <div aria-live="polite" className="sr-only">
+          {filteredImages.length} photo{filteredImages.length > 1 ? 's' : ''} — {currentCategoryLabel}
+        </div>
+
         <div
           key={filter}
           className="columns-2 md:columns-4 gap-2 md:gap-3"
@@ -117,13 +151,18 @@ const Gallery = () => {
               whileHover={{ scale: 1.02 }}
               onClick={() => openImage(index)}
             >
+              {!imagesLoaded[image.id] && (
+                <div className="skeleton absolute inset-0" />
+              )}
               <Image
                 src={image.path}
                 alt={image.alt}
                 width={600}
                 height={800}
+                loading="lazy"
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                onLoad={() => handleImageLoad(image.id)}
               />
               <div className="absolute inset-0 bg-zinc-950/0 group-hover:bg-zinc-950/30 transition-colors duration-500" />
               <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
@@ -154,6 +193,24 @@ const Gallery = () => {
             onPrev={goPrev}
             navigationInfo={`${selectedIndex + 1} / ${filteredImages.length}`}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            className="back-to-top"
+            onClick={scrollToTop}
+            aria-label="Retour en haut"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.2 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <ArrowUp size={22} weight="bold" />
+          </motion.button>
         )}
       </AnimatePresence>
     </motion.section>

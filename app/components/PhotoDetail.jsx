@@ -8,12 +8,52 @@ import { X, CaretLeft, CaretRight } from '@phosphor-icons/react';
 
 const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInfo }) => {
   const photoContainerRef = useRef(null);
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
+
+  // Focus management
+  useEffect(() => {
+    previouslyFocusedRef.current = document.activeElement;
+
+    const timer = setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      previouslyFocusedRef.current?.focus();
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowRight' && onNext) onNext();
       if (e.key === 'ArrowLeft' && onPrev) onPrev();
+
+      // Focus trap
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
@@ -79,6 +119,10 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
 
   return (
     <motion.div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={photo.title}
       className="fixed inset-0 z-50 flex items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -93,6 +137,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
 
       {/* Close button */}
       <motion.button
+        ref={closeButtonRef}
         className="absolute top-6 right-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
         onClick={onClose}
         whileHover={{ scale: 1.1 }}
@@ -125,6 +170,11 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
           <CaretRight size={36} weight="light" />
         </motion.button>
       )}
+
+      {/* aria-live region for screen readers */}
+      <div aria-live="polite" className="sr-only">
+        {photo.title} — {navigationInfo}
+      </div>
 
       {/* Content */}
       <div className="relative z-10 flex flex-col md:flex-row w-full h-full md:h-auto md:max-h-[90vh] md:max-w-6xl md:mx-8 overflow-y-auto md:overflow-hidden">

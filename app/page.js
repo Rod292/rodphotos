@@ -1,12 +1,13 @@
-'use client';
+import HeroLoader from './components/HeroLoader';
 
-import dynamic from 'next/dynamic';
-
-const Hero = dynamic(() => import('./components/Hero'), {
-  ssr: false,
-  loading: () => <div className="h-screen w-full bg-white" />,
-});
+export const metadata = {
+  title: 'ROD - Photographie',
+  description: 'Portfolio de photographie minimaliste par ROD, photographe breton — paysages, portraits, street et voyage.',
+  alternates: {
+    canonical: '/',
+  },
+};
 
 export default function Home() {
-  return <Hero />;
+  return <HeroLoader />;
 }
