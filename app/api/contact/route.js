@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
@@ -11,17 +14,13 @@ export async function POST(request) {
       );
     }
 
-    // TODO: Connecter a un service d'email (Resend, SendGrid, etc.)
-    // Exemple avec Resend:
-    // const resend = new Resend(process.env.RESEND_API_KEY);
-    // await resend.emails.send({
-    //   from: 'contact@rod-photos.com',
-    //   to: 'contact@rod-photos.com',
-    //   subject: `Nouveau message de ${name}`,
-    //   text: `De: ${name} (${email})\n\n${message}`,
-    // });
-
-    console.log('Contact form submission:', { name, email, message });
+    await resend.emails.send({
+      from: 'ROD Photos <onboarding@resend.dev>',
+      to: 'photos.pers@gmail.com',
+      replyTo: email,
+      subject: `Nouveau message de ${name}`,
+      text: `Nom: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

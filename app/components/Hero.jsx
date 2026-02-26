@@ -78,13 +78,13 @@ const Hero = () => {
 
   return (
     <motion.section
-      className="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-white"
+      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-white"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       ref={containerRef}
     >
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      <div className="relative w-full h-full flex items-center justify-center overflow-hidden" style={{ minHeight: '100dvh' }}>
         <motion.div
           className="absolute bottom-0 left-1/2 -translate-x-1/2"
           animate={controls}
@@ -117,7 +117,7 @@ const Hero = () => {
                   fill
                   sizes="(max-width: 768px) 200px, 250px"
                   className="object-cover"
-                  preload={index < 3}
+                  priority={index < 3}
                 />
               </div>
             </motion.div>
@@ -125,22 +125,23 @@ const Hero = () => {
         </motion.div>
 
         {/* Gradient for button readability */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-white via-white/60 to-transparent z-40 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white via-white/60 to-transparent z-30 pointer-events-none" />
 
         <motion.div
-          className="absolute z-50 flex flex-col sm:flex-row gap-4"
+          className="absolute z-40 flex flex-col sm:flex-row gap-4"
           style={{ bottom: isMobile ? '5%' : '32px' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
+          transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.6 }}
         >
           <Link href="/gallery">
             <motion.span
               className="btn-dark inline-block text-center"
               whileHover={{ scale: 1.05, boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)' }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
             >
-              Découvrir la galerie
+              Decouvrir la galerie
             </motion.span>
           </Link>
         </motion.div>

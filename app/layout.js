@@ -1,10 +1,10 @@
-import { Montserrat } from 'next/font/google';
+import { Outfit } from 'next/font/google';
 import './styles/globals.css';
 import Header from './components/Header';
 
-const montserrat = Montserrat({
+const outfit = Outfit({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
+  weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
 });
 
@@ -16,7 +16,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="fr">
-      <body className={montserrat.className}>
+      <body className={outfit.className}>
         <Header />
         <main>{children}</main>
       </body>
