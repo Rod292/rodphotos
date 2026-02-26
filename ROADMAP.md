@@ -93,13 +93,13 @@
 
 ### SEO & Métadonnées
 
-- [ ] **Créer des pages individuelles par photo (`/gallery/[id]`)**
+- [x] **Créer des pages individuelles par photo (`/gallery/[id]`)**
   - Priorité : Haute
   - Complexité : Moyenne
   - Fichiers : `app/gallery/[id]/page.js` (à créer), `app/data/photos.js`
   - Chaque photo a sa propre URL indexable avec métadonnées uniques (title, description, OG image). Permet le partage direct d'une photo et améliore considérablement le SEO images.
 
-- [ ] **Ajouter des pages par catégorie (`/gallery/landscape`, etc.)**
+- [x] **Ajouter des pages par catégorie (`/gallery/landscape`, etc.)**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `app/gallery/[category]/page.js` (à créer)
@@ -107,25 +107,25 @@
 
 ### Photo & Galerie
 
-- [ ] **Ajouter un mode diaporama automatique**
+- [x] **Ajouter un mode diaporama automatique**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `app/components/PhotoDetail.jsx`
   - Bouton play/pause dans le viewer pour faire défiler les photos automatiquement (intervalle configurable ~5s). Pause au survol ou interaction.
 
-- [ ] **Ajouter le support des gestes tactiles dans PhotoDetail**
+- [x] **Ajouter le support des gestes tactiles dans PhotoDetail**
   - Priorité : Haute
   - Complexité : Moyenne
   - Fichiers : `app/components/PhotoDetail.jsx`
   - Swipe gauche/droite pour naviguer entre les photos sur mobile. Utiliser les Pan gestures de Motion déjà disponible dans le projet.
 
-- [ ] **Ajouter un zoom sur les photos (pinch-to-zoom / scroll zoom)**
+- [x] **Ajouter un zoom sur les photos (pinch-to-zoom / scroll zoom)**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `app/components/PhotoDetail.jsx`
   - Permettre de zoomer dans les détails d'une photo en plein écran. Double-tap pour zoom 2x sur mobile.
 
-- [ ] **Ajouter un système de favoris (localStorage)**
+- [x] **Ajouter un système de favoris (localStorage)**
   - Priorité : Faible
   - Complexité : Moyenne
   - Fichiers : `app/components/Gallery.jsx`, `app/components/PhotoDetail.jsx`
@@ -139,19 +139,19 @@
 
 ### Performance
 
-- [ ] **Ajouter un Service Worker pour le cache offline**
+- [x] **Ajouter un Service Worker pour le cache offline**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `public/sw.js` (à créer), `app/layout.js`
   - Cache des pages visitées et des images pour consultation hors-ligne. Précache des assets critiques.
 
-- [ ] **Implémenter le prefetch intelligent des images adjacentes**
+- [x] **Implémenter le prefetch intelligent des images adjacentes**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `app/components/PhotoDetail.jsx`, `app/components/Gallery.jsx`
   - Quand une photo est ouverte, précharger les images précédente/suivante pour une navigation instantanée.
 
-- [ ] **Ajouter des headers de cache optimisés**
+- [x] **Ajouter des headers de cache optimisés**
   - Priorité : Moyenne
   - Complexité : Faible
   - Fichiers : `next.config.mjs`
@@ -159,13 +159,13 @@
 
 ### Engagement & Contact
 
-- [ ] **Ajouter les liens réseaux sociaux dans le footer**
+- [x] **Ajouter les liens réseaux sociaux dans le footer**
   - Priorité : Haute
   - Complexité : Faible
   - Fichiers : `app/components/Footer.jsx` (à créer), `app/layout.js`
   - Footer avec liens Instagram, email, et éventuellement d'autres réseaux. Présent sur toutes les pages.
 
-- [ ] **Ajouter un bouton de partage sur chaque photo**
+- [x] **Ajouter un bouton de partage sur chaque photo**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `app/components/PhotoDetail.jsx`
@@ -185,13 +185,13 @@
   - Fichiers : `app/layout.js`, `app/styles/globals.css`, `app/components/Header.jsx`
   - Toggle dans le header, sauvegarde de la préférence en localStorage, respect de `prefers-color-scheme`.
 
-- [ ] **Ajouter des transitions de page (page transitions)**
+- [x] **Ajouter des transitions de page (page transitions)**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `app/layout.js`, `app/components/` (nouveau composant wrapper)
   - Utiliser Motion pour animer les transitions entre pages (fade, slide). Renforce le côté premium du portfolio.
 
-- [ ] **Améliorer la galerie avec un layout Masonry dynamique**
+- [x] **Améliorer la galerie avec un layout Masonry dynamique**
   - Priorité : Moyenne
   - Complexité : Moyenne
   - Fichiers : `app/components/Gallery.jsx`
@@ -306,23 +306,23 @@
 | Haute | Open Graph / Twitter Cards | 1 |
 | Haute | Images WebP/AVIF | 1 |
 | Haute | Optimiser le LCP du Hero | 1 |
-| Haute | Pages individuelles par photo | 2 |
-| Haute | Gestes tactiles PhotoDetail | 2 |
-| Haute | Footer avec réseaux sociaux | 2 |
+| ~~Haute~~ | ~~Pages individuelles par photo~~ | ~~2~~ |
+| ~~Haute~~ | ~~Gestes tactiles PhotoDetail~~ | ~~2~~ |
+| ~~Haute~~ | ~~Footer avec réseaux sociaux~~ | ~~2~~ |
 | Moyenne | JSON-LD données structurées | 1 |
 | Moyenne | Lazy loading galerie | 1 |
 | Moyenne | ARIA live transitions | 1 |
 | Moyenne | Focus trap modale | 1 |
 | Moyenne | Skeleton loading | 1 |
-| Moyenne | Pages par catégorie | 2 |
-| Moyenne | Diaporama automatique | 2 |
-| Moyenne | Zoom photo | 2 |
-| Moyenne | Service Worker offline | 2 |
-| Moyenne | Prefetch images adjacentes | 2 |
-| Moyenne | Cache headers | 2 |
-| Moyenne | Bouton partage | 2 |
-| Moyenne | Transitions de page | 2 |
-| Moyenne | Masonry dynamique | 2 |
+| ~~Moyenne~~ | ~~Pages par catégorie~~ | ~~2~~ |
+| ~~Moyenne~~ | ~~Diaporama automatique~~ | ~~2~~ |
+| ~~Moyenne~~ | ~~Zoom photo~~ | ~~2~~ |
+| ~~Moyenne~~ | ~~Service Worker offline~~ | ~~2~~ |
+| ~~Moyenne~~ | ~~Prefetch images adjacentes~~ | ~~2~~ |
+| ~~Moyenne~~ | ~~Cache headers~~ | ~~2~~ |
+| ~~Moyenne~~ | ~~Bouton partage~~ | ~~2~~ |
+| ~~Moyenne~~ | ~~Transitions de page~~ | ~~2~~ |
+| ~~Moyenne~~ | ~~Masonry dynamique~~ | ~~2~~ |
 | Moyenne | Boutique tirages | 3 |
 | Moyenne | Devis prestations | 3 |
 | Moyenne | CMS headless | 3 |
@@ -334,7 +334,7 @@
 | Moyenne | CI/CD pipeline | 3 |
 | Faible | Skip to content | 1 |
 | Faible | Bouton retour en haut | 1 |
-| Faible | Favoris localStorage | 2 |
+| ~~Faible~~ | ~~Favoris localStorage~~ | ~~2~~ |
 | Faible | Pagination / scroll infini | 2 |
 | Faible | Témoignages clients | 2 |
 | Faible | Mode clair / sombre | 2 |

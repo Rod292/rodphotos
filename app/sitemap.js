@@ -1,5 +1,7 @@
+import { photos, CATEGORY_SLUGS } from './data/photos';
+
 export default function sitemap() {
-  return [
+  const staticPages = [
     {
       url: 'https://rodphotos.com',
       lastModified: new Date(),
@@ -25,4 +27,20 @@ export default function sitemap() {
       priority: 0.5,
     },
   ];
+
+  const categoryPages = CATEGORY_SLUGS.map(slug => ({
+    url: `https://rodphotos.com/gallery/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }));
+
+  const photoPages = photos.map(photo => ({
+    url: `https://rodphotos.com/gallery/${photo.id}`,
+    lastModified: new Date(),
+    changeFrequency: 'yearly',
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...categoryPages, ...photoPages];
 }

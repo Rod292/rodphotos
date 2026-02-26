@@ -1,47 +1,97 @@
 'use client';
 
-import React, { useEffect, useRef, useMemo } from 'react';
-import { motion } from 'motion/react';
+import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
+import { motion, useMotionValue } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { X, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { X, CaretLeft, CaretRight, ShareNetwork, Check, Play, Pause } from '@phosphor-icons/react';
+import FavoriteButton from './FavoriteButton';
 
-const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInfo }) => {
+const SWIPE_THRESHOLD = 50;
+const VELOCITY_THRESHOLD = 300;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
+
+const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, nextPhoto, navigationInfo, isFavorite, onToggleFavorite }) => {
   const photoContainerRef = useRef(null);
   const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
+  const imageWrapperRef = useRef(null);
+
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [shareStatus, setShareStatus] = useState(null);
+
+  const scaleRef = useRef(1);
+  const scale = useMotionValue(1);
+  const panX = useMotionValue(0);
+  const panY = useMotionValue(0);
+
+  const pinchStartDistRef = useRef(0);
+  const pinchStartScaleRef = useRef(1);
+
+  const pauseSlideshow = useCallback(() => {
+    setIsPlaying(false);
+  }, []);
+
+  // Reset zoom when photo changes
+  useEffect(() => {
+    scaleRef.current = 1;
+    scale.set(1);
+    panX.set(0);
+    panY.set(0);
+    setIsZoomed(false);
+  }, [photo.id, scale, panX, panY]);
+
+  // Prefetch adjacent images
+  useEffect(() => {
+    if (prevPhoto) {
+      const img = new window.Image();
+      img.src = prevPhoto.path;
+    }
+    if (nextPhoto) {
+      const img = new window.Image();
+      img.src = nextPhoto.path;
+    }
+  }, [prevPhoto, nextPhoto]);
+
+  // Slideshow auto-advance
+  useEffect(() => {
+    if (!isPlaying || !onNext) return;
+    const interval = setInterval(() => {
+      onNext();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isPlaying, onNext]);
 
   // Focus management
   useEffect(() => {
     previouslyFocusedRef.current = document.activeElement;
-
     const timer = setTimeout(() => {
       closeButtonRef.current?.focus();
     }, 100);
-
     return () => {
       clearTimeout(timer);
       previouslyFocusedRef.current?.focus();
     };
   }, []);
 
+  // Keyboard + focus trap
   useEffect(() => {
     const handleKeyDown = (e) => {
+      pauseSlideshow();
       if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowRight' && onNext) onNext();
-      if (e.key === 'ArrowLeft' && onPrev) onPrev();
+      if (e.key === 'ArrowRight' && onNext && !isZoomed) onNext();
+      if (e.key === 'ArrowLeft' && onPrev && !isZoomed) onPrev();
 
-      // Focus trap
       if (e.key === 'Tab' && dialogRef.current) {
         const focusable = dialogRef.current.querySelectorAll(
           'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         );
         if (focusable.length === 0) return;
-
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-
         if (e.shiftKey) {
           if (document.activeElement === first) {
             e.preventDefault();
@@ -61,21 +111,124 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [onClose, onNext, onPrev]);
+  }, [onClose, onNext, onPrev, isZoomed, pauseSlideshow]);
 
-  // Compute FLIP initial transform from sourceRect
+  // Scroll wheel zoom (desktop)
+  useEffect(() => {
+    const el = imageWrapperRef.current;
+    if (!el) return;
+
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const delta = -e.deltaY * 0.002;
+      const newScale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, scaleRef.current + delta));
+      scaleRef.current = newScale;
+      scale.set(newScale);
+      setIsZoomed(newScale > 1);
+      if (newScale === 1) {
+        panX.set(0);
+        panY.set(0);
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [scale, panX, panY]);
+
+  // Pinch-to-zoom (mobile)
+  useEffect(() => {
+    const el = imageWrapperRef.current;
+    if (!el) return;
+
+    const getDistance = (touches) => {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        pinchStartDistRef.current = getDistance(e.touches);
+        pinchStartScaleRef.current = scaleRef.current;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dist = getDistance(e.touches);
+        const ratio = dist / pinchStartDistRef.current;
+        const newScale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchStartScaleRef.current * ratio));
+        scaleRef.current = newScale;
+        scale.set(newScale);
+        setIsZoomed(newScale > 1);
+        if (newScale === 1) {
+          panX.set(0);
+          panY.set(0);
+        }
+      }
+    };
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [scale, panX, panY]);
+
+  // Double-click/tap zoom toggle
+  const handleDoubleClick = useCallback(() => {
+    if (scaleRef.current > 1) {
+      scaleRef.current = 1;
+      scale.set(1);
+      panX.set(0);
+      panY.set(0);
+      setIsZoomed(false);
+    } else {
+      scaleRef.current = 2;
+      scale.set(2);
+      setIsZoomed(true);
+    }
+  }, [scale, panX, panY]);
+
+  // Drag end: swipe navigation when not zoomed
+  const handleDragEnd = useCallback((_, info) => {
+    if (isZoomed) return;
+    pauseSlideshow();
+    const { offset, velocity } = info;
+    if (offset.x > SWIPE_THRESHOLD || velocity.x > VELOCITY_THRESHOLD) {
+      onPrev?.();
+    } else if (offset.x < -SWIPE_THRESHOLD || velocity.x < -VELOCITY_THRESHOLD) {
+      onNext?.();
+    }
+  }, [isZoomed, onNext, onPrev, pauseSlideshow]);
+
+  // Share handler
+  const handleShare = useCallback(async () => {
+    const url = `${window.location.origin}/gallery/${photo.id}`;
+    const shareData = { title: photo.title, text: photo.description, url };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // User cancelled
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShareStatus('copied');
+      setTimeout(() => setShareStatus(null), 2000);
+    }
+  }, [photo]);
+
+  // FLIP initial transform
   const flipInitial = useMemo(() => {
     if (!sourceRect) {
-      // Fallback: simple scale-up from center
       return {
-        scaleX: 0.3,
-        scaleY: 0.3,
-        x: 0,
-        y: 0,
-        rotate: 0,
-        rotateY: 0,
-        borderRadius: '0.5rem',
-        opacity: 1,
+        scaleX: 0.3, scaleY: 0.3, x: 0, y: 0,
+        rotate: 0, rotateY: 0, borderRadius: '0.5rem', opacity: 1,
       };
     }
 
@@ -106,14 +259,9 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
     const sy = sourceRect.thumbHeight / targetH;
 
     return {
-      x: dx,
-      y: dy,
-      scaleX: sx,
-      scaleY: sy,
-      rotate: sourceRect.totalRotation || 0,
-      rotateY: 0,
-      borderRadius: '0.5rem',
-      opacity: 1,
+      x: dx, y: dy, scaleX: sx, scaleY: sy,
+      rotate: sourceRect.totalRotation || 0, rotateY: 0,
+      borderRadius: '0.5rem', opacity: 1,
     };
   }, [sourceRect]);
 
@@ -135,6 +283,19 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
         onClick={onClose}
       />
 
+      {/* Slideshow toggle */}
+      {onNext && (
+        <motion.button
+          className="absolute top-6 left-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+          onClick={() => setIsPlaying(prev => !prev)}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          aria-label={isPlaying ? 'Pause diaporama' : 'Lancer le diaporama'}
+        >
+          {isPlaying ? <Pause size={28} weight="light" /> : <Play size={28} weight="light" />}
+        </motion.button>
+      )}
+
       {/* Close button */}
       <motion.button
         ref={closeButtonRef}
@@ -151,7 +312,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
       {onPrev && (
         <motion.button
           className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
-          onClick={(e) => { e.stopPropagation(); onPrev(); }}
+          onClick={(e) => { e.stopPropagation(); pauseSlideshow(); onPrev(); }}
           aria-label="Image précédente"
           whileHover={{ scale: 1.1, x: -4 }}
           whileTap={{ scale: 0.9 }}
@@ -162,7 +323,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
       {onNext && (
         <motion.button
           className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
-          onClick={(e) => { e.stopPropagation(); onNext(); }}
+          onClick={(e) => { e.stopPropagation(); pauseSlideshow(); onNext(); }}
           aria-label="Image suivante"
           whileHover={{ scale: 1.1, x: 4 }}
           whileTap={{ scale: 0.9 }}
@@ -171,14 +332,14 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
         </motion.button>
       )}
 
-      {/* aria-live region for screen readers */}
+      {/* Screen reader announcement */}
       <div aria-live="polite" className="sr-only">
         {photo.title} — {navigationInfo}
       </div>
 
       {/* Content */}
       <div className="relative z-10 flex flex-col md:flex-row w-full h-full md:h-auto md:max-h-[90vh] md:max-w-6xl md:mx-8 overflow-y-auto md:overflow-hidden">
-        {/* Photo with FLIP animation */}
+        {/* Photo with FLIP animation (parent) */}
         <div
           ref={photoContainerRef}
           className="relative w-full md:w-1/2 min-h-[50vh] md:min-h-[80vh] flex-shrink-0"
@@ -188,40 +349,41 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
             className="w-full h-full relative"
             initial={flipInitial}
             animate={{
-              x: 0,
-              y: 0,
-              scaleX: 1,
-              scaleY: 1,
-              rotate: 0,
-              rotateY: [0, -25, 0],
-              borderRadius: '0rem',
-              opacity: 1,
+              x: 0, y: 0, scaleX: 1, scaleY: 1, rotate: 0,
+              rotateY: [0, -25, 0], borderRadius: '0rem', opacity: 1,
             }}
-            exit={{
-              opacity: 0,
-              scale: 0.85,
-              rotateY: 30,
-            }}
+            exit={{ opacity: 0, scale: 0.85, rotateY: 30 }}
             transition={{
-              type: 'spring',
-              stiffness: 70,
-              damping: 20,
+              type: 'spring', stiffness: 70, damping: 20,
               rotateY: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
               opacity: { duration: 0.2 },
             }}
           >
-            <Image
-              src={photo.path}
-              alt={photo.alt}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-contain"
-              priority
-            />
+            {/* Inner wrapper for zoom/pan/swipe */}
+            <motion.div
+              ref={imageWrapperRef}
+              className="w-full h-full relative touch-none"
+              style={{ scale, x: isZoomed ? panX : 0, y: isZoomed ? panY : 0 }}
+              drag={isZoomed ? true : 'x'}
+              dragConstraints={isZoomed ? { left: -200, right: 200, top: -200, bottom: 200 } : { left: 0, right: 0 }}
+              dragElastic={isZoomed ? 0.1 : 0.2}
+              onDragEnd={handleDragEnd}
+              onDoubleClick={handleDoubleClick}
+            >
+              <Image
+                src={photo.path}
+                alt={photo.alt}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain"
+                priority
+                draggable={false}
+              />
+            </motion.div>
           </motion.div>
         </div>
 
-        {/* Details */}
+        {/* Details panel */}
         <motion.div
           className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center text-white"
           initial={{ opacity: 0, x: 50 }}
@@ -229,7 +391,16 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
           exit={{ opacity: 0, x: 50 }}
           transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.25 }}
         >
-          <h2 className="text-3xl font-light tracking-tight mb-4">{photo.title}</h2>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="text-3xl font-light tracking-tight">{photo.title}</h2>
+            {onToggleFavorite && (
+              <FavoriteButton
+                isFavorite={isFavorite}
+                onToggle={() => onToggleFavorite(photo.id)}
+                size={24}
+              />
+            )}
+          </div>
           <p className="text-zinc-400 font-light leading-relaxed mb-8">{photo.description}</p>
 
           {photo.technical && (
@@ -250,6 +421,24 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, navigationInf
           {navigationInfo && (
             <p className="text-zinc-600 text-sm font-light tracking-widest mb-6">{navigationInfo}</p>
           )}
+
+          {/* Share button */}
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm mb-4 self-start"
+          >
+            {shareStatus === 'copied' ? (
+              <>
+                <Check size={18} weight="light" />
+                Lien copié
+              </>
+            ) : (
+              <>
+                <ShareNetwork size={18} weight="light" />
+                Partager
+              </>
+            )}
+          </button>
 
           {photo.purchaseUrl ? (
             <a

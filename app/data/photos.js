@@ -247,3 +247,18 @@ export function getPhotosByCategory(category) {
   if (category === 'all') return photos;
   return photos.filter(p => p.category === category);
 }
+
+export function getPhotoById(id) {
+  return photos.find(p => p.id === id) || null;
+}
+
+export const CATEGORY_SLUGS = categories.filter(c => c.id !== 'all').map(c => c.id);
+
+export function getAdjacentPhotos(id) {
+  const index = photos.findIndex(p => p.id === id);
+  if (index === -1) return { prev: null, next: null };
+  return {
+    prev: index > 0 ? photos[index - 1] : null,
+    next: index < photos.length - 1 ? photos[index + 1] : null,
+  };
+}

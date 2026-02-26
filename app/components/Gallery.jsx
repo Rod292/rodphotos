@@ -1,11 +1,26 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
-import { ArrowUp } from '@phosphor-icons/react';
+import { ArrowUp, Heart } from '@phosphor-icons/react';
 import { photos, categories } from '../data/photos';
 import PhotoDetail from './PhotoDetail';
+import FavoriteButton from './FavoriteButton';
+import { useFavorites } from '../hooks/useFavorites';
+
+function getMasonryColumns(items, columnCount) {
+  const columns = Array.from({ length: columnCount }, () => []);
+  const heights = new Array(columnCount).fill(0);
+
+  items.forEach((item, index) => {
+    const shortest = heights.indexOf(Math.min(...heights));
+    columns[shortest].push({ ...item, originalIndex: index });
+    heights[shortest] += 1;
+  });
+
+  return columns;
+}
 
 const Gallery = () => {
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -13,13 +28,37 @@ const Gallery = () => {
   const [sourceRect, setSourceRect] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState({});
+  const [columnCount, setColumnCount] = useState(4);
   const thumbnailRefs = useRef([]);
+  const { favorites, toggle, isFavorite } = useFavorites();
 
-  const filteredImages = filter === 'all'
-    ? photos
-    : photos.filter(img => img.category === filter);
+  const allCategories = useMemo(() => {
+    if (favorites.length === 0) return categories;
+    return [...categories, { id: 'favorites', label: 'Favoris' }];
+  }, [favorites.length]);
+
+  const filteredImages = useMemo(() => {
+    if (filter === 'all') return photos;
+    if (filter === 'favorites') return photos.filter(img => favorites.includes(img.id));
+    return photos.filter(img => img.category === filter);
+  }, [filter, favorites]);
 
   const selectedImage = selectedIndex !== null ? filteredImages[selectedIndex] : null;
+
+  // Responsive column count
+  useEffect(() => {
+    const updateColumns = () => {
+      setColumnCount(window.innerWidth < 768 ? 2 : 4);
+    };
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
+
+  const masonryColumns = useMemo(
+    () => getMasonryColumns(filteredImages, columnCount),
+    [filteredImages, columnCount]
+  );
 
   const openImage = useCallback((index) => {
     const el = thumbnailRefs.current[index];
@@ -53,6 +92,11 @@ const Gallery = () => {
     );
   }, [filteredImages.length]);
 
+  const prevPhoto = selectedIndex !== null && selectedIndex > 0
+    ? filteredImages[selectedIndex - 1] : null;
+  const nextPhoto = selectedIndex !== null && selectedIndex < filteredImages.length - 1
+    ? filteredImages[selectedIndex + 1] : null;
+
   useEffect(() => {
     return () => { document.body.style.overflow = ''; };
   }, []);
@@ -79,7 +123,7 @@ const Gallery = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const currentCategoryLabel = categories.find(c => c.id === filter)?.label || 'Toutes';
+  const currentCategoryLabel = allCategories.find(c => c.id === filter)?.label || 'Toutes';
 
   return (
     <motion.section
@@ -106,7 +150,7 @@ const Gallery = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.1 }}
         >
-          {categories.map(category => (
+          {allCategories.map(category => (
             <motion.button
               key={category.id}
               onClick={() => setFilter(category.id)}
@@ -127,7 +171,16 @@ const Gallery = () => {
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 />
               )}
-              <span className="relative z-10">{category.label}</span>
+              <span className="relative z-10">
+                {category.id === 'favorites' ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Heart size={14} weight="fill" className="text-red-400" />
+                    {category.label}
+                  </span>
+                ) : (
+                  category.label
+                )}
+              </span>
             </motion.button>
           ))}
         </motion.div>
@@ -136,39 +189,51 @@ const Gallery = () => {
           {filteredImages.length} photo{filteredImages.length > 1 ? 's' : ''} — {currentCategoryLabel}
         </div>
 
-        <div
-          key={filter}
-          className="columns-2 md:columns-4 gap-2 md:gap-3"
-        >
-          {filteredImages.map((image, index) => (
-            <motion.div
-              key={image.path}
-              ref={(el) => { thumbnailRefs.current[index] = el; }}
-              className="mb-2 md:mb-3 break-inside-avoid rounded-lg overflow-hidden cursor-pointer group relative"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 20, delay: Math.min(index * 0.04, 0.8) }}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => openImage(index)}
-            >
-              {!imagesLoaded[image.id] && (
-                <div className="skeleton absolute inset-0" />
-              )}
-              <Image
-                src={image.path}
-                alt={image.alt}
-                width={600}
-                height={800}
-                loading="lazy"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-                onLoad={() => handleImageLoad(image.id)}
-              />
-              <div className="absolute inset-0 bg-zinc-950/0 group-hover:bg-zinc-950/30 transition-colors duration-500" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                <p className="text-sm text-zinc-300 font-light tracking-wide">{image.alt}</p>
-              </div>
-            </motion.div>
+        {/* Masonry layout */}
+        <div key={filter} className="flex gap-2 md:gap-3">
+          {masonryColumns.map((column, colIndex) => (
+            <div key={colIndex} className="flex-1 flex flex-col gap-2 md:gap-3">
+              {column.map((image) => (
+                <motion.div
+                  key={image.path}
+                  ref={(el) => { thumbnailRefs.current[image.originalIndex] = el; }}
+                  className="rounded-lg overflow-hidden cursor-pointer group relative"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 20, delay: Math.min(image.originalIndex * 0.04, 0.8) }}
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => openImage(image.originalIndex)}
+                >
+                  {!imagesLoaded[image.id] && (
+                    <div className="skeleton absolute inset-0" />
+                  )}
+                  <Image
+                    src={image.path}
+                    alt={image.alt}
+                    width={600}
+                    height={800}
+                    loading="lazy"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                    onLoad={() => handleImageLoad(image.id)}
+                  />
+                  <div className="absolute inset-0 bg-zinc-950/0 group-hover:bg-zinc-950/30 transition-colors duration-500" />
+
+                  {/* Favorite overlay */}
+                  <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <FavoriteButton
+                      isFavorite={isFavorite(image.id)}
+                      onToggle={() => toggle(image.id)}
+                      size={20}
+                    />
+                  </div>
+
+                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                    <p className="text-sm text-zinc-300 font-light tracking-wide">{image.alt}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           ))}
         </div>
 
@@ -178,7 +243,9 @@ const Gallery = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <p className="text-zinc-500 text-lg font-light">Aucune image dans cette categorie.</p>
+            <p className="text-zinc-500 text-lg font-light">
+              {filter === 'favorites' ? 'Aucun favori pour le moment.' : 'Aucune image dans cette catégorie.'}
+            </p>
           </motion.div>
         )}
       </div>
@@ -191,7 +258,11 @@ const Gallery = () => {
             onClose={closeImage}
             onNext={goNext}
             onPrev={goPrev}
+            prevPhoto={prevPhoto}
+            nextPhoto={nextPhoto}
             navigationInfo={`${selectedIndex + 1} / ${filteredImages.length}`}
+            isFavorite={isFavorite(selectedImage.id)}
+            onToggleFavorite={toggle}
           />
         )}
       </AnimatePresence>

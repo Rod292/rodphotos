@@ -1,6 +1,7 @@
 import { Outfit } from 'next/font/google';
 import './styles/globals.css';
 import Header from './components/Header';
+import Footer from './components/Footer';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -59,6 +60,18 @@ export default function RootLayout({ children }) {
         </a>
         <Header />
         <main id="main-content">{children}</main>
+        <Footer />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').catch(() => {});
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
