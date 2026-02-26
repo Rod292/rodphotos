@@ -61,7 +61,7 @@ const About = () => {
             </p>
 
             <div className="flex flex-wrap gap-4 mt-8">
-              <Link href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+              <Link href="https://instagram.com/pcklerod" target="_blank" rel="noopener noreferrer">
                 <motion.span
                   className="btn-primary inline-block"
                   whileHover={{ scale: 1.05 }}
