@@ -130,8 +130,8 @@ const Contact = () => {
             <div className="space-y-4 mb-10">
               <div className="flex items-center gap-3">
                 <Envelope size={20} weight="light" className="text-zinc-500" />
-                <a href="mailto:photos.pers@gmail.com" className="text-zinc-400 hover:text-zinc-100 transition-colors">
-                  photos.pers@gmail.com
+                <a href="mailto:contact@photosrod.com" className="text-zinc-400 hover:text-zinc-100 transition-colors">
+                  contact@photosrod.com
                 </a>
               </div>
               <div className="flex items-center gap-3">

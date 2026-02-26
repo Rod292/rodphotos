@@ -20,7 +20,7 @@ const Footer = () => {
             <InstagramLogo size={22} weight="light" />
           </a>
           <a
-            href="mailto:photos.pers@gmail.com"
+            href="mailto:contact@photosrod.com"
             className="text-zinc-500 hover:text-white transition-colors"
             aria-label="Email"
           >
