@@ -24,9 +24,9 @@ const About = () => {
           A propos
         </motion.h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-10 md:gap-16 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-10 md:gap-16 items-start">
           <motion.div
-            className="relative w-full aspect-[4/5] rounded-lg overflow-hidden md:-mt-4"
+            className="relative w-full aspect-[3/4] max-h-[70vh] rounded-lg overflow-hidden"
             initial={{ opacity: 0, x: -40 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.1 }}

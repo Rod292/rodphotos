@@ -102,45 +102,36 @@ const Gallery = () => {
           ))}
         </motion.div>
 
-        <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 auto-rows-[200px] md:auto-rows-[280px]"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
-          }}
+        <div
+          key={filter}
+          className="columns-2 md:columns-4 gap-2 md:gap-3"
         >
-          <AnimatePresence mode="popLayout">
-            {filteredImages.map((image, index) => (
-              <motion.div
-                key={image.path}
-                ref={(el) => { thumbnailRefs.current[index] = el; }}
-                className={`relative overflow-hidden rounded-lg cursor-pointer group ${image.gallerySpan || ''}`}
-                variants={{
-                  hidden: { opacity: 0, scale: 0.95 },
-                  visible: { opacity: 1, scale: 1 },
-                }}
-                layout
-                whileHover={{ scale: 1.01 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                onClick={() => openImage(index)}
-              >
-                <Image
-                  src={image.path}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-                />
-                <div className="absolute inset-0 bg-zinc-950/0 group-hover:bg-zinc-950/30 transition-colors duration-500" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                  <p className="text-sm text-zinc-300 font-light tracking-wide">{image.alt}</p>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+          {filteredImages.map((image, index) => (
+            <motion.div
+              key={image.path}
+              ref={(el) => { thumbnailRefs.current[index] = el; }}
+              className="mb-2 md:mb-3 break-inside-avoid rounded-lg overflow-hidden cursor-pointer group relative"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 20, delay: Math.min(index * 0.04, 0.8) }}
+              whileHover={{ scale: 1.02 }}
+              onClick={() => openImage(index)}
+            >
+              <Image
+                src={image.path}
+                alt={image.alt}
+                width={600}
+                height={800}
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+              />
+              <div className="absolute inset-0 bg-zinc-950/0 group-hover:bg-zinc-950/30 transition-colors duration-500" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                <p className="text-sm text-zinc-300 font-light tracking-wide">{image.alt}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
 
         {filteredImages.length === 0 && (
           <motion.div
