@@ -31,6 +31,7 @@ const Gallery = () => {
   const [imageErrors, setImageErrors] = useState({});
   const [columnCount, setColumnCount] = useState(4);
   const thumbnailRefs = useRef([]);
+  const preloadedRef = useRef(new Set());
   const { favorites, toggle, isFavorite } = useFavorites();
 
   const allCategories = useMemo(() => {
@@ -61,16 +62,38 @@ const Gallery = () => {
     [filteredImages, columnCount]
   );
 
+  // Preload full-size image on hover for smooth FLIP animation
+  const preloadFullImage = useCallback((photo) => {
+    if (preloadedRef.current.has(photo.id)) return;
+    preloadedRef.current.add(photo.id);
+
+    const dpr = window.devicePixelRatio || 1;
+    const vw = window.innerWidth;
+    const isMobile = vw < 768;
+    // PhotoDetail uses sizes="(max-width: 768px) 100vw, 50vw"
+    const displayWidth = isMobile ? vw : vw * 0.5;
+    const neededWidth = Math.round(displayWidth * dpr);
+    const availableWidths = [640, 750, 828, 1080, 1200, 1920, 2048, 3840];
+    const targetWidth = availableWidths.find(w => w >= neededWidth) || availableWidths[availableWidths.length - 1];
+
+    const img = new window.Image();
+    img.src = `/_next/image?url=${encodeURIComponent(photo.path)}&w=${targetWidth}&q=75`;
+  }, []);
+
   const openImage = useCallback((index) => {
     const el = thumbnailRefs.current[index];
     if (el) {
       const domRect = el.getBoundingClientRect();
+      const imgEl = el.querySelector('img');
+      const thumbSrc = imgEl?.currentSrc || null;
+      console.log('[Gallery] openImage thumbSrc:', thumbSrc, 'imgEl:', imgEl, 'complete:', imgEl?.complete);
       setSourceRect({
         cx: domRect.x + domRect.width / 2,
         cy: domRect.y + domRect.height / 2,
         thumbWidth: domRect.width,
         thumbHeight: domRect.height,
         totalRotation: 0,
+        thumbSrc,
       });
     }
     setSelectedIndex(index);
@@ -220,6 +243,8 @@ const Gallery = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 20, delay: Math.min(image.originalIndex * 0.04, 0.8) }}
                     whileHover={{ scale: 1.02 }}
+                    onMouseEnter={() => preloadFullImage(image)}
+                    onTouchStart={() => preloadFullImage(image)}
                     onClick={() => openImage(image.originalIndex)}
                   >
                     {!imagesLoaded[image.id] && !imageErrors[image.id] && (

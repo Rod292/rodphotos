@@ -23,6 +23,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
   const [isZoomed, setIsZoomed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [shareStatus, setShareStatus] = useState(null);
+  const [fullImageLoaded, setFullImageLoaded] = useState(false);
 
   const scaleRef = useRef(1);
   const scale = useMotionValue(1);
@@ -36,25 +37,32 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
     setIsPlaying(false);
   }, []);
 
-  // Reset zoom when photo changes
+  // Reset zoom and image loaded state when photo changes
   useEffect(() => {
     scaleRef.current = 1;
     scale.set(1);
     panX.set(0);
     panY.set(0);
     setIsZoomed(false);
+    setFullImageLoaded(false);
   }, [photo.id, scale, panX, panY]);
 
-  // Prefetch adjacent images
+  // Prefetch adjacent images with Next.js optimized URLs
   useEffect(() => {
-    if (prevPhoto) {
-      const img = new window.Image();
-      img.src = prevPhoto.path;
-    }
-    if (nextPhoto) {
-      const img = new window.Image();
-      img.src = nextPhoto.path;
-    }
+    const dpr = window.devicePixelRatio || 1;
+    const vw = window.innerWidth;
+    const isMobile = vw < 768;
+    const displayWidth = isMobile ? vw : vw * 0.5;
+    const neededWidth = Math.round(displayWidth * dpr);
+    const availableWidths = [640, 750, 828, 1080, 1200, 1920, 2048, 3840];
+    const targetWidth = availableWidths.find(w => w >= neededWidth) || availableWidths[availableWidths.length - 1];
+
+    [prevPhoto, nextPhoto].forEach(p => {
+      if (p) {
+        const img = new window.Image();
+        img.src = `/_next/image?url=${encodeURIComponent(p.path)}&w=${targetWidth}&q=75`;
+      }
+    });
   }, [prevPhoto, nextPhoto]);
 
   // Slideshow auto-advance
@@ -355,6 +363,12 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
         >
           <motion.div
             className="w-full h-full relative"
+            style={!fullImageLoaded && photo.blurDataURL ? {
+              backgroundImage: `url(${photo.blurDataURL})`,
+              backgroundSize: 'contain',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            } : undefined}
             initial={flipInitial}
             animate={{
               x: 0, y: 0, scaleX: 1, scaleY: 1, rotate: 0,
@@ -378,6 +392,16 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
               onDragEnd={handleDragEnd}
               onDoubleClick={handleDoubleClick}
             >
+              {/* Gallery thumbnail as immediate placeholder (exact cached URL) */}
+              {console.log('[PhotoDetail] fullImageLoaded:', fullImageLoaded, 'thumbSrc:', sourceRect?.thumbSrc, 'blurDataURL:', !!photo.blurDataURL)}
+              {!fullImageLoaded && sourceRect?.thumbSrc && (
+                <img
+                  src={sourceRect.thumbSrc}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
+                  aria-hidden="true"
+                />
+              )}
               <Image
                 src={photo.path}
                 alt={photo.alt}
@@ -386,6 +410,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
                 className="object-contain"
                 priority
                 draggable={false}
+                onLoad={() => setFullImageLoaded(true)}
               />
             </motion.div>
           </motion.div>
