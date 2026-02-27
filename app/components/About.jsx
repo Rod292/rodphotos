@@ -28,7 +28,8 @@ const About = () => {
           <motion.div
             className="relative w-full aspect-[3/4] max-h-[70vh] rounded-lg overflow-hidden"
             initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
             transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.1 }}
           >
             <Image
@@ -44,7 +45,8 @@ const About = () => {
           <motion.div
             className="flex flex-col justify-start pt-0 md:pt-8"
             initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
             transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.2 }}
           >
             <h2 className="text-3xl md:text-4xl tracking-tighter font-light mb-6">ROD</h2>

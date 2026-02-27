@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
-import { motion, useMotionValue, useReducedMotion } from 'motion/react';
+import { motion, useMotionValue, useReducedMotion, useTransform, animate } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, CaretLeft, CaretRight, ShareNetwork, Check, Play, Pause } from '@phosphor-icons/react';
@@ -30,6 +30,11 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
   const panX = useMotionValue(0);
   const panY = useMotionValue(0);
 
+  const dismissY = useMotionValue(0);
+  const dismissScale = useTransform(dismissY, [0, 300], [1, 0.9]);
+  const backdropOpacity = useTransform(dismissY, [0, 300], [1, 0]);
+  const [isDismissing, setIsDismissing] = useState(false);
+
   const pinchStartDistRef = useRef(0);
   const pinchStartScaleRef = useRef(1);
 
@@ -45,7 +50,9 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
     panY.set(0);
     setIsZoomed(false);
     setFullImageLoaded(false);
-  }, [photo.id, scale, panX, panY]);
+    dismissY.set(0);
+    setIsDismissing(false);
+  }, [photo.id, scale, panX, panY, dismissY]);
 
   // Prefetch adjacent images with Next.js optimized URLs
   useEffect(() => {
@@ -202,6 +209,17 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
     }
   }, [scale, panX, panY]);
 
+  // Dismiss drag end: swipe down to close
+  const handleDismissDragEnd = useCallback((_, info) => {
+    if (isZoomed) return;
+    if (info.offset.y > 100 || info.velocity.y > 500) {
+      setIsDismissing(true);
+      onClose();
+    } else {
+      animate(dismissY, 0, { type: 'spring', stiffness: 300, damping: 30 });
+    }
+  }, [isZoomed, onClose, dismissY]);
+
   // Drag end: swipe navigation when not zoomed
   const handleDragEnd = useCallback((_, info) => {
     if (isZoomed) return;
@@ -297,6 +315,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
       <motion.div
         className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm"
         onClick={onClose}
+        style={{ opacity: backdropOpacity }}
       />
 
       {/* Slideshow toggle */}
@@ -374,44 +393,55 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
               x: 0, y: 0, scaleX: 1, scaleY: 1, rotate: 0,
               rotateY: [0, -25, 0], borderRadius: '0rem', opacity: 1,
             }}
-            exit={{ opacity: 0, scale: 0.85, rotateY: 30 }}
+            exit={isDismissing
+              ? { opacity: 0, y: 200, scale: 0.85 }
+              : { opacity: 0, scale: 0.85, rotateY: 30 }}
             transition={{
               type: 'spring', stiffness: 70, damping: 20,
               rotateY: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
               opacity: { duration: 0.2 },
             }}
           >
-            {/* Inner wrapper for zoom/pan/swipe */}
+            {/* Dismiss wrapper for swipe-to-close */}
             <motion.div
-              ref={imageWrapperRef}
-              className="w-full h-full relative touch-none"
-              style={{ scale, x: isZoomed ? panX : 0, y: isZoomed ? panY : 0 }}
-              drag={isZoomed ? true : 'x'}
-              dragConstraints={isZoomed ? { left: -200, right: 200, top: -200, bottom: 200 } : { left: 0, right: 0 }}
-              dragElastic={isZoomed ? 0.1 : 0.2}
-              onDragEnd={handleDragEnd}
-              onDoubleClick={handleDoubleClick}
+              drag={isZoomed ? false : 'y'}
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.4}
+              style={{ y: dismissY, scale: dismissScale }}
+              onDragEnd={handleDismissDragEnd}
+              className="w-full h-full touch-none"
             >
-              {/* Gallery thumbnail as immediate placeholder (exact cached URL) */}
-              {console.log('[PhotoDetail] fullImageLoaded:', fullImageLoaded, 'thumbSrc:', sourceRect?.thumbSrc, 'blurDataURL:', !!photo.blurDataURL)}
-              {!fullImageLoaded && sourceRect?.thumbSrc && (
-                <img
-                  src={sourceRect.thumbSrc}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
-                  aria-hidden="true"
+              {/* Inner wrapper for zoom/pan/swipe */}
+              <motion.div
+                ref={imageWrapperRef}
+                className="w-full h-full relative touch-none"
+                style={{ scale, x: isZoomed ? panX : 0, y: isZoomed ? panY : 0 }}
+                drag={isZoomed ? true : 'x'}
+                dragConstraints={isZoomed ? { left: -200, right: 200, top: -200, bottom: 200 } : { left: 0, right: 0 }}
+                dragElastic={isZoomed ? 0.1 : 0.2}
+                onDragEnd={handleDragEnd}
+                onDoubleClick={handleDoubleClick}
+              >
+                {/* Gallery thumbnail as immediate placeholder (exact cached URL) */}
+                {!fullImageLoaded && sourceRect?.thumbSrc && (
+                  <img
+                    src={sourceRect.thumbSrc}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
+                    aria-hidden="true"
+                  />
+                )}
+                <Image
+                  src={photo.path}
+                  alt={photo.alt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-contain"
+                  priority
+                  draggable={false}
+                  onLoad={() => setFullImageLoaded(true)}
                 />
-              )}
-              <Image
-                src={photo.path}
-                alt={photo.alt}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-contain"
-                priority
-                draggable={false}
-                onLoad={() => setFullImageLoaded(true)}
-              />
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>

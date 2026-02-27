@@ -45,6 +45,8 @@ const PhotoPage = ({ photo, prev, next }) => {
               sizes="(max-width: 1024px) 100vw, 66vw"
               className="object-contain"
               priority
+              placeholder="blur"
+              blurDataURL={photo.blurDataURL}
             />
           </motion.div>
 

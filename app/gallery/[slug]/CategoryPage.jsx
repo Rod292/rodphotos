@@ -14,6 +14,7 @@ const CategoryPage = ({ slug }) => {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [sourceRect, setSourceRect] = useState(null);
   const [imagesLoaded, setImagesLoaded] = useState({});
+  const [imageErrors, setImageErrors] = useState({});
   const thumbnailRefs = useRef([]);
   const { toggle, isFavorite } = useFavorites();
 
@@ -55,6 +56,10 @@ const CategoryPage = ({ slug }) => {
 
   const handleImageLoad = useCallback((imageId) => {
     setImagesLoaded(prev => ({ ...prev, [imageId]: true }));
+  }, []);
+
+  const handleImageError = useCallback((imageId) => {
+    setImageErrors(prev => ({ ...prev, [imageId]: true }));
   }, []);
 
   const prevPhoto = selectedIndex !== null && selectedIndex > 0 ? filteredImages[selectedIndex - 1] : null;
@@ -99,24 +104,41 @@ const CategoryPage = ({ slug }) => {
               ref={(el) => { thumbnailRefs.current[index] = el; }}
               className="mb-2 md:mb-3 break-inside-avoid rounded-lg overflow-hidden cursor-pointer group relative"
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 20, delay: Math.min(index * 0.04, 0.8) }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ type: 'spring', stiffness: 200, damping: 20, delay: (index % 4) * 0.06 }}
               whileHover={{ scale: 1.02 }}
               onClick={() => openImage(index)}
             >
-              {!imagesLoaded[image.id] && (
+              {!imagesLoaded[image.id] && !imageErrors[image.id] && (
                 <div className="skeleton absolute inset-0" />
               )}
-              <Image
-                src={image.path}
-                alt={image.alt}
-                width={600}
-                height={800}
-                loading="lazy"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-                onLoad={() => handleImageLoad(image.id)}
-              />
+              {imageErrors[image.id] ? (
+                <div className="w-full aspect-[3/4] bg-zinc-900 flex items-center justify-center rounded-lg">
+                  <div className="text-center text-zinc-600">
+                    <svg className="mx-auto mb-2" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="m21 15-5-5L5 21" />
+                    </svg>
+                    <p className="text-xs">Image indisponible</p>
+                  </div>
+                </div>
+              ) : (
+                <Image
+                  src={image.path}
+                  alt={image.alt}
+                  width={600}
+                  height={800}
+                  loading="lazy"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                  placeholder={image.blurDataURL ? 'blur' : 'empty'}
+                  blurDataURL={image.blurDataURL}
+                  onLoad={() => handleImageLoad(image.id)}
+                  onError={() => handleImageError(image.id)}
+                />
+              )}
               <div className="absolute inset-0 bg-zinc-950/0 group-hover:bg-zinc-950/30 transition-colors duration-500" />
               <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <FavoriteButton

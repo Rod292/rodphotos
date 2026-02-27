@@ -248,6 +248,8 @@ const Hero = () => {
                   className="object-cover"
                   priority={index < 3}
                   {...(index === 0 ? { fetchPriority: 'high' } : {})}
+                  placeholder="blur"
+                  blurDataURL={photos[index].blurDataURL}
                 />
               </div>
             </motion.div>

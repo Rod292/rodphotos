@@ -234,14 +234,15 @@ const Gallery = () => {
           >
             {masonryColumns.map((column, colIndex) => (
               <div key={colIndex} className="flex-1 flex flex-col gap-2 md:gap-3">
-                {column.map((image) => (
+                {column.map((image, indexInColumn) => (
                   <motion.div
                     key={image.path}
                     ref={(el) => { thumbnailRefs.current[image.originalIndex] = el; }}
                     className="rounded-lg overflow-hidden cursor-pointer group relative"
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 20, delay: Math.min(image.originalIndex * 0.04, 0.8) }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-50px' }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 20, delay: (indexInColumn % 4) * 0.06 }}
                     whileHover={{ scale: 1.02 }}
                     onMouseEnter={() => preloadFullImage(image)}
                     onTouchStart={() => preloadFullImage(image)}
