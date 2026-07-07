@@ -42,16 +42,22 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
     setIsPlaying(false);
   }, []);
 
-  // Reset zoom and image loaded state when photo changes
+  // Reset state when photo changes (adjustment during render)
+  const [prevPhotoId, setPrevPhotoId] = useState(photo.id);
+  if (prevPhotoId !== photo.id) {
+    setPrevPhotoId(photo.id);
+    setIsZoomed(false);
+    setFullImageLoaded(false);
+    setIsDismissing(false);
+  }
+
+  // Reset zoom motion values when photo changes
   useEffect(() => {
     scaleRef.current = 1;
     scale.set(1);
     panX.set(0);
     panY.set(0);
-    setIsZoomed(false);
-    setFullImageLoaded(false);
     dismissY.set(0);
-    setIsDismissing(false);
   }, [photo.id, scale, panX, panY, dismissY]);
 
   // Prefetch adjacent images with Next.js optimized URLs

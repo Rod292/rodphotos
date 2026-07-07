@@ -1,34 +1,69 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 const STORAGE_KEY = 'rodphotos-favorites';
+const CHANGE_EVENT = 'rodphotos-favorites-changed';
+const EMPTY = [];
+
+let cachedRaw = null;
+let cachedFavorites = EMPTY;
 
 function readFavorites() {
-  if (typeof window === 'undefined') return [];
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : EMPTY;
   } catch {
-    return [];
+    return EMPTY;
   }
 }
 
-export function useFavorites() {
-  const [favorites, setFavorites] = useState([]);
+function getSnapshot() {
+  let raw = null;
+  try {
+    raw = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return EMPTY;
+  }
+  if (raw !== cachedRaw) {
+    cachedRaw = raw;
+    try {
+      cachedFavorites = raw ? JSON.parse(raw) : EMPTY;
+    } catch {
+      cachedFavorites = EMPTY;
+    }
+  }
+  return cachedFavorites;
+}
 
-  useEffect(() => {
-    setFavorites(readFavorites());
-  }, []);
+function getServerSnapshot() {
+  return EMPTY;
+}
+
+function subscribe(callback) {
+  // 'storage' couvre les autres onglets, l'événement custom couvre l'onglet courant
+  window.addEventListener('storage', callback);
+  window.addEventListener(CHANGE_EVENT, callback);
+  return () => {
+    window.removeEventListener('storage', callback);
+    window.removeEventListener(CHANGE_EVENT, callback);
+  };
+}
+
+export function useFavorites() {
+  const favorites = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const toggle = useCallback((photoId) => {
-    setFavorites((prev) => {
-      const next = prev.includes(photoId)
-        ? prev.filter((id) => id !== photoId)
-        : [...prev, photoId];
+    const current = readFavorites();
+    const next = current.includes(photoId)
+      ? current.filter((id) => id !== photoId)
+      : [...current, photoId];
+    try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
+    } catch {
+      return;
+    }
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
   const isFavorite = useCallback(

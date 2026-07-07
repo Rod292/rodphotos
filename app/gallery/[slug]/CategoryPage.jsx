@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ const CategoryPage = ({ slug }) => {
   const { toggle, isFavorite } = useFavorites();
 
   const category = categories.find(c => c.id === slug);
-  const filteredImages = getPhotosByCategory(slug);
+  const filteredImages = useMemo(() => getPhotosByCategory(slug), [slug]);
   const selectedImage = selectedIndex !== null ? filteredImages[selectedIndex] : null;
 
   const openImage = useCallback((index) => {

@@ -86,7 +86,6 @@ const Gallery = () => {
       const domRect = el.getBoundingClientRect();
       const imgEl = el.querySelector('img');
       const thumbSrc = imgEl?.currentSrc || null;
-      console.log('[Gallery] openImage thumbSrc:', thumbSrc, 'imgEl:', imgEl, 'complete:', imgEl?.complete);
       setSourceRect({
         cx: domRect.x + domRect.width / 2,
         cy: domRect.y + domRect.height / 2,
@@ -134,10 +133,18 @@ const Gallery = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Reset loaded images when filter changes
-  useEffect(() => {
+  // Reset loaded images when filter changes (adjustment during render)
+  const [prevFilter, setPrevFilter] = useState(filter);
+  if (prevFilter !== filter) {
+    setPrevFilter(filter);
     setImagesLoaded({});
-  }, [filter]);
+  }
+
+  // Si le dernier favori est retiré pendant que le filtre Favoris est actif,
+  // revenir sur « Toutes » pour ne pas rester sur un filtre devenu invisible
+  if (filter === 'favorites' && favorites.length === 0) {
+    setFilter('all');
+  }
 
   const handleImageLoad = useCallback((imageId) => {
     setImagesLoaded(prev => ({ ...prev, [imageId]: true }));

@@ -53,8 +53,8 @@ const Hero = () => {
   const lastTimeRef = useRef(null);
   const containerRef = useRef(null);
   const thumbnailRefs = useRef([]);
-  const hasInitiallyAnimated = useRef(false);
 
+  const [hasInitiallyAnimated, setHasInitiallyAnimated] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [sourceRect, setSourceRect] = useState(null);
 
@@ -132,7 +132,7 @@ const Hero = () => {
 
   // Mark initial animation as done
   useEffect(() => {
-    const timer = setTimeout(() => { hasInitiallyAnimated.current = true; }, 1000);
+    const timer = setTimeout(() => { setHasInitiallyAnimated(true); }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -167,7 +167,7 @@ const Hero = () => {
         zIndex: 100 - Math.floor(distFromTop * 100),
       };
     });
-  }, [windowSize]);
+  }, [windowSize, isMobile]);
 
   const handlePhotoClick = useCallback((index) => {
     if (didPan.current) return;
@@ -226,8 +226,8 @@ const Hero = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: selectedPhoto?.id === photos[index].id ? 0 : 1 }}
               transition={{
-                duration: prefersReducedMotion ? 0 : (selectedPhoto?.id === photos[index].id ? 0 : (hasInitiallyAnimated.current ? 0.3 : 0.8)),
-                delay: prefersReducedMotion ? 0 : (hasInitiallyAnimated.current ? 0 : index * 0.05),
+                duration: prefersReducedMotion ? 0 : (selectedPhoto?.id === photos[index].id ? 0 : (hasInitiallyAnimated ? 0.3 : 0.8)),
+                delay: prefersReducedMotion ? 0 : (hasInitiallyAnimated ? 0 : index * 0.05),
               }}
               style={{
                 width: `${Math.min(isMobile ? 250 : 250, windowSize.width * (isMobile ? 0.55 : 0.2))}px`,

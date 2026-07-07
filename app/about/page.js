@@ -6,7 +6,7 @@ export const metadata = {
   openGraph: {
     title: 'À propos | ROD Photographie',
     description: 'Découvrez ROD, photographe breton passionné par la nature et le film argentique',
-    images: [{ url: '/ROD.png', width: 1200, height: 800, alt: 'ROD — Photographe' }],
+    images: [{ url: '/og-about.jpg', width: 1200, height: 630, alt: 'ROD — Photographe' }],
   },
   alternates: {
     canonical: '/about',
