@@ -1,4 +1,5 @@
 import { Outfit } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './styles/globals.css';
 import Header from './components/Header';
 import ConditionalFooter from './components/ConditionalFooter';
@@ -11,7 +12,7 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://rodphotos.com'),
+  metadataBase: new URL('https://www.photosrod.com'),
   title: {
     default: 'ROD - Photographie',
     template: '%s | ROD Photographie',
@@ -23,13 +24,13 @@ export const metadata = {
     siteName: 'ROD Photographie',
     title: 'ROD - Photographie',
     description: 'Portfolio de photographie minimaliste par ROD, photographe breton.',
-    images: [{ url: '/photos/DSCF5550.jpg', width: 1200, height: 800, alt: 'Golden Gate Bridge au coucher du soleil' }],
+    images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'Golden Gate Bridge au coucher du soleil' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'ROD - Photographie',
     description: 'Portfolio de photographie minimaliste par ROD, photographe breton.',
-    images: ['/photos/DSCF5550.jpg'],
+    images: ['/og.jpg'],
   },
   icons: {
     icon: '/favicon.svg',
@@ -44,9 +45,9 @@ const jsonLd = {
   '@type': 'ProfessionalService',
   name: 'ROD Photographie',
   description: 'Photographe breton spécialisé en paysages, portraits, street et voyage.',
-  url: 'https://rodphotos.com',
+  url: 'https://www.photosrod.com',
   sameAs: ['https://instagram.com/pcklerod'],
-  image: 'https://rodphotos.com/photos/DSCF5550.jpg',
+  image: 'https://www.photosrod.com/og.jpg',
 };
 
 export default function RootLayout({ children }) {
@@ -67,6 +68,7 @@ export default function RootLayout({ children }) {
           <main id="main-content">{children}</main>
           <ConditionalFooter />
         </MotionProvider>
+        <Analytics />
         <script
           dangerouslySetInnerHTML={{
             __html: `

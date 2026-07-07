@@ -3,6 +3,41 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const MAX_LENGTHS = { name: 100, email: 254, phone: 30, message: 5000 };
+// Un humain met plus de 3 s à remplir le formulaire ; les bots soumettent instantanément
+const MIN_FILL_TIME_MS = 3000;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_MAX = 3;
+const ALLOWED_HOSTS = ['photosrod.com', 'www.photosrod.com', 'localhost'];
+
+// Best-effort sur serverless : la Map vit le temps d'une instance chaude,
+// suffisant pour bloquer les rafales d'un même bot
+const submissionsByIp = new Map();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  for (const [key, timestamps] of submissionsByIp) {
+    const recent = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+    if (recent.length === 0) submissionsByIp.delete(key);
+    else submissionsByIp.set(key, recent);
+  }
+  const attempts = submissionsByIp.get(ip) || [];
+  if (attempts.length >= RATE_LIMIT_MAX) return true;
+  submissionsByIp.set(ip, [...attempts, now]);
+  return false;
+}
+
+function isFromAllowedOrigin(request) {
+  const origin = request.headers.get('origin');
+  // Absence d'Origin : on laisse les autres protections trancher
+  if (!origin) return true;
+  try {
+    return ALLOWED_HOSTS.includes(new URL(origin).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&amp;')
@@ -75,11 +110,64 @@ function buildHtml({ name, email, phone, message }) {
 
 export async function POST(request) {
   try {
-    const { name, email, phone, message } = await request.json();
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isRateLimited(ip)) {
+      console.log('[contact] blocked: rate limit', ip);
+      return NextResponse.json(
+        { error: 'Trop de messages envoyés. Veuillez réessayer plus tard.' },
+        { status: 429 }
+      );
+    }
 
-    if (!name?.trim() || !email?.trim() || !message?.trim()) {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Requête invalide' }, { status: 400 });
+    }
+    const { website, elapsed } = body;
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
+    const email = typeof body.email === 'string' ? body.email.trim() : '';
+    const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
+    const message = typeof body.message === 'string' ? body.message.trim() : '';
+
+    // Détection de bots : on renvoie un faux succès sans envoyer d'email,
+    // pour ne pas leur indiquer que la soumission a été bloquée
+    if (website) {
+      console.log('[contact] blocked: honeypot', ip);
+      return NextResponse.json({ success: true });
+    }
+    if (typeof elapsed !== 'number' || elapsed < MIN_FILL_TIME_MS) {
+      console.log('[contact] blocked: too fast or missing elapsed', ip, elapsed);
+      return NextResponse.json({ success: true });
+    }
+    if (!isFromAllowedOrigin(request)) {
+      console.log('[contact] blocked: bad origin', ip, request.headers.get('origin'));
+      return NextResponse.json({ success: true });
+    }
+
+    if (!name || !email || !message) {
       return NextResponse.json(
         { error: 'Tous les champs sont requis' },
+        { status: 400 }
+      );
+    }
+
+    if (
+      name.length > MAX_LENGTHS.name ||
+      email.length > MAX_LENGTHS.email ||
+      phone.length > MAX_LENGTHS.phone ||
+      message.length > MAX_LENGTHS.message
+    ) {
+      return NextResponse.json(
+        { error: 'Un des champs dépasse la longueur maximale autorisée' },
+        { status: 400 }
+      );
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { error: "Format d'email invalide" },
         { status: 400 }
       );
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import Image from 'next/image';
@@ -17,7 +17,9 @@ const Contact = () => {
     email: '',
     phone: '',
     message: '',
+    website: '', // honeypot — reste vide pour un humain
   });
+  const formStartRef = useRef(Date.now());
   const [formStatus, setFormStatus] = useState({
     submitted: false,
     success: false,
@@ -67,7 +69,10 @@ const Contact = () => {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          elapsed: Date.now() - formStartRef.current,
+        }),
       });
 
       if (response.ok) {
@@ -77,7 +82,7 @@ const Contact = () => {
           error: false,
           message: 'Votre message a été envoyé avec succès. Je vous répondrai dans les plus brefs délais.',
         });
-        setFormData({ name: '', email: '', phone: '', message: '' });
+        setFormData({ name: '', email: '', phone: '', message: '', website: '' });
       } else {
         setFormStatus({
           submitted: true,
@@ -105,7 +110,7 @@ const Contact = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="max-w-[1400px] mx-auto max-w-3xl">
+      <div className="max-w-[1400px] mx-auto">
         <motion.h1
           className="text-4xl md:text-6xl tracking-tighter leading-none mb-8 md:mb-12 font-light"
           initial={{ opacity: 0, y: -20 }}
@@ -200,6 +205,20 @@ const Contact = () => {
                 className="space-y-5 rounded-xl p-6 md:p-8 border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                 noValidate
               >
+                {/* Honeypot anti-spam : champ invisible que seuls les bots remplissent */}
+                <div aria-hidden="true" className="absolute -left-[9999px] top-0 h-0 w-0 overflow-hidden">
+                  <label htmlFor="website">Site web</label>
+                  <input
+                    type="text"
+                    id="website"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleChange}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="name" className="block text-sm text-zinc-400 mb-2">
                     Nom

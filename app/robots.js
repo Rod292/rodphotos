@@ -4,6 +4,6 @@ export default function robots() {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://rodphotos.com/sitemap.xml',
+    sitemap: 'https://www.photosrod.com/sitemap.xml',
   };
 }

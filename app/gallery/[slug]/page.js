@@ -21,7 +21,7 @@ export async function generateMetadata({ params }) {
       openGraph: {
         title: `${label} | ROD Photographie`,
         description: `Photographies ${label.toLowerCase()} par ROD`,
-        images: [{ url: '/photos/DSCF5550.jpg', width: 1200, height: 800 }],
+        images: [{ url: '/og.jpg', width: 1200, height: 630 }],
       },
       alternates: { canonical: `/gallery/${slug}` },
     };
@@ -30,20 +30,23 @@ export async function generateMetadata({ params }) {
   const photo = getPhotoById(slug);
   if (!photo) return {};
 
+  // Version optimisée (~1200px) plutôt que l'original de plusieurs Mo
+  const ogImage = `/_next/image?url=${encodeURIComponent(photo.path)}&w=1200&q=75`;
+
   return {
     title: photo.title,
     description: photo.description,
     openGraph: {
       title: `${photo.title} | ROD Photographie`,
       description: photo.description,
-      images: [{ url: photo.path, width: 1200, height: 800, alt: photo.alt }],
+      images: [{ url: ogImage, alt: photo.alt }],
       type: 'article',
     },
     twitter: {
       card: 'summary_large_image',
       title: `${photo.title} | ROD Photographie`,
       description: photo.description,
-      images: [photo.path],
+      images: [ogImage],
     },
     alternates: { canonical: `/gallery/${slug}` },
   };
@@ -66,8 +69,8 @@ export default async function SlugPage({ params }) {
     '@type': 'ImageObject',
     name: photo.title,
     description: photo.description,
-    contentUrl: `https://rodphotos.com${photo.path}`,
-    thumbnailUrl: `https://rodphotos.com${photo.path}`,
+    contentUrl: `https://www.photosrod.com${photo.path}`,
+    thumbnailUrl: `https://www.photosrod.com${photo.path}`,
     author: { '@type': 'Person', name: 'ROD' },
     copyrightHolder: { '@type': 'Person', name: 'ROD' },
   };
