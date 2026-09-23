@@ -17,7 +17,7 @@ export const metadata = {
     default: 'ROD - Photographie',
     template: '%s | ROD Photographie',
   },
-  description: 'Portfolio de photographie minimaliste par ROD, photographe breton — paysages, portraits, street et voyage.',
+  description: 'Portfolio de photographie minimaliste par ROD, photographe breton — surf, paysages, street et voyage.',
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
@@ -44,7 +44,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ProfessionalService',
   name: 'ROD Photographie',
-  description: 'Photographe breton spécialisé en paysages, portraits, street et voyage.',
+  description: 'Photographe breton spécialisé en surf, paysages, street et voyage.',
   url: 'https://www.photosrod.com',
   sameAs: ['https://instagram.com/pcklerod'],
   image: 'https://www.photosrod.com/og.jpg',

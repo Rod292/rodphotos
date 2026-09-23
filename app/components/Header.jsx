@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -26,8 +26,21 @@ const Header = () => {
 
   const closeMenu = () => setIsMenuOpen(false);
 
-  const onHeroWhiteBg = isHome && !scrolled && !isMenuOpen;
-  const textColor = onHeroWhiteBg ? 'text-zinc-900' : 'text-zinc-100';
+  // Menu mobile : Échap pour fermer, page figée derrière
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
+  const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   const headerBg = (scrolled || isMenuOpen || !isHome)
     ? 'bg-zinc-950/90 backdrop-blur-md shadow-xs'
@@ -42,47 +55,37 @@ const Header = () => {
     >
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-4 flex justify-between items-center">
         <Link href="/" aria-label="ROD - Accueil">
-          <motion.span
-            className={`text-2xl tracking-tight font-light ${textColor}`}
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          >
+          <span className="text-2xl tracking-tight font-light text-zinc-100">
             ROD
-          </motion.span>
+          </span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8" aria-label="Navigation principale">
           {navItems.map(item => {
-            const isActive = pathname === item.href;
+            const active = isActive(item.href);
             return (
-              <Link key={item.href} href={item.href}>
-                <motion.span
+              <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined}>
+                <span
                   className={`relative text-sm tracking-wide transition-colors ${
-                    isActive
-                      ? (onHeroWhiteBg ? 'text-zinc-900' : 'text-zinc-100')
-                      : (onHeroWhiteBg ? 'text-zinc-500 hover:text-zinc-900' : 'text-zinc-500 hover:text-zinc-300')
+                    active ? 'text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'
                   }`}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                 >
                   {item.label}
-                  {isActive && (
+                  {active && (
                     <motion.span
-                      className={`absolute -bottom-1 left-0 right-0 h-px ${onHeroWhiteBg ? 'bg-zinc-900' : 'bg-zinc-400'}`}
+                      className="absolute -bottom-1 left-0 right-0 h-px bg-zinc-400"
                       layoutId="nav-underline"
                       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                     />
                   )}
-                </motion.span>
+                </span>
               </Link>
             );
           })}
         </nav>
 
         <button
-          className={`md:hidden flex flex-col justify-center items-center w-8 h-8 ${textColor}`}
+          className="md:hidden flex flex-col justify-center items-center w-11 h-11 -mr-2 text-zinc-100"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           aria-expanded={isMenuOpen}
@@ -117,9 +120,9 @@ const Header = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ type: 'spring', stiffness: 150, damping: 20, delay: index * 0.05 }}
                 >
-                  <Link href={item.href} onClick={closeMenu}>
+                  <Link href={item.href} onClick={closeMenu} aria-current={isActive(item.href) ? 'page' : undefined}>
                     <span className={`block py-2 text-lg font-light tracking-wide transition-colors ${
-                      pathname === item.href ? 'text-zinc-100' : 'text-zinc-500'
+                      isActive(item.href) ? 'text-zinc-100' : 'text-zinc-400'
                     }`}>
                       {item.label}
                     </span>

@@ -27,8 +27,8 @@ const About = () => {
         <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-10 md:gap-16 items-start">
           <motion.div
             className="relative w-full aspect-[3/4] max-h-[70vh] rounded-lg overflow-hidden"
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.1 }}
           >
@@ -44,8 +44,8 @@ const About = () => {
 
           <motion.div
             className="flex flex-col justify-start pt-0 md:pt-8"
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.2 }}
           >
@@ -55,39 +55,30 @@ const About = () => {
                 Je suis ROD, un photographe breton de 25 ans passionné par la capture de moments simples, la nature, et les couleurs uniques du film argentique.
               </p>
               <p className="text-base text-zinc-400 leading-relaxed">
-                {"Mon approche photographique se concentre sur la beauté du quotidien, les paysages naturels et l'authenticité des instants capturés. J'aime particulierement travailler avec la photographie argentique pour sa richesse de tons et son caractere inimitable."}
+                {"Mon approche photographique se concentre sur la beauté du quotidien, les paysages naturels et l'authenticité des instants capturés. J'aime particulièrement travailler avec la photographie argentique pour sa richesse de tons et son caractère inimitable."}
               </p>
               <p className="text-base text-zinc-400 leading-relaxed">
                 {"Je réalise également des photos de surf, capturant l'énergie des vagues et la passion des surfeurs en action."}
               </p>
               <p className="text-base text-zinc-400 leading-relaxed">
-                {"Je propose mes photos a la vente et je réalise également des séances photo de style lifestyle pour vos futures campagnes. N'hésitez pas a me contacter pour discuter de vos projets ou pour acquerir mes oeuvres."}
+                {"Je propose mes photos à la vente et je réalise également des séances photo de style lifestyle pour vos futures campagnes. N'hésitez pas à me contacter pour discuter de vos projets ou pour acquérir mes œuvres."}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-4 mt-10">
-              <Link href="https://instagram.com/pcklerod" target="_blank" rel="noopener noreferrer">
-                <motion.span
-                  className="btn-primary inline-flex items-center gap-2"
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                >
-                  <InstagramLogo size={18} weight="light" />
-                  Instagram
-                </motion.span>
+              <Link href="/contact" className="btn-light">
+                Me contacter
               </Link>
 
-              <Link href="/contact">
-                <motion.span
-                  className="btn-primary inline-block"
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                >
-                  Contact
-                </motion.span>
-              </Link>
+              <a
+                href="https://instagram.com/pcklerod"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary inline-flex items-center gap-2"
+              >
+                <InstagramLogo size={18} weight="light" />
+                Instagram
+              </a>
             </div>
           </motion.div>
         </div>

@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { Envelope, MapPin, InstagramLogo, CheckCircle } from '@phosphor-icons/react';
 import { photos } from '../data/photos';
 
+const SUBJECTS = ['Tirage', 'Séance photo', 'Collaboration', 'Autre'];
+
 const Contact = () => {
   const searchParams = useSearchParams();
   const photoId = searchParams.get('photo');
@@ -16,6 +18,7 @@ const Contact = () => {
     name: '',
     email: '',
     phone: '',
+    subject: '',
     message: '',
     website: '', // honeypot — reste vide pour un humain
   });
@@ -33,6 +36,7 @@ const Contact = () => {
     if (selectedPhoto) {
       setFormData(prev => ({
         ...prev,
+        subject: 'Tirage',
         message: `Bonjour,\n\nJe souhaite obtenir des renseignements concernant la photo « ${selectedPhoto.title} » (réf: ${selectedPhoto.id}).\n\nMerci.`,
       }));
     }
@@ -82,7 +86,7 @@ const Contact = () => {
           error: false,
           message: 'Votre message a été envoyé avec succès. Je vous répondrai dans les plus brefs délais.',
         });
-        setFormData({ name: '', email: '', phone: '', message: '', website: '' });
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '', website: '' });
       } else {
         setFormStatus({
           submitted: true,
@@ -96,7 +100,7 @@ const Contact = () => {
         submitted: true,
         success: false,
         error: true,
-        message: 'Une erreur est survenue. Veuillez reessayer ou me contacter directement par email.',
+        message: 'Une erreur est survenue. Veuillez réessayer ou me contacter directement par email.',
       });
     } finally {
       setSubmitting(false);
@@ -123,8 +127,8 @@ const Contact = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
           {/* Left column: contact info + photo if selected */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.1 }}
           >
             <h2 className="text-xl font-light mb-6 tracking-tight">Échangeons</h2>
@@ -184,8 +188,8 @@ const Contact = () => {
 
           {/* Form */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.2 }}
           >
             {formStatus.submitted && formStatus.success ? (
@@ -265,7 +269,7 @@ const Contact = () => {
 
                 <div>
                   <label htmlFor="phone" className="block text-sm text-zinc-400 mb-2">
-                    Téléphone <span className="text-zinc-600">(optionnel)</span>
+                    Téléphone <span className="text-zinc-400 font-light">(optionnel)</span>
                   </label>
                   <input
                     type="tel"
@@ -276,6 +280,34 @@ const Contact = () => {
                     className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 focus:border-zinc-600 transition-all"
                   />
                 </div>
+
+                <fieldset>
+                  <legend className="block text-sm text-zinc-400 mb-2">
+                    Objet <span className="text-zinc-400 font-light">(optionnel)</span>
+                  </legend>
+                  <div className="flex flex-wrap gap-2">
+                    {SUBJECTS.map(subject => (
+                      <label
+                        key={subject}
+                        className={`cursor-pointer px-4 py-2 rounded-full text-sm border transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-zinc-400 ${
+                          formData.subject === subject
+                            ? 'bg-zinc-100 text-zinc-950 border-zinc-100'
+                            : 'border-zinc-800 text-zinc-300 hover:border-zinc-600'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="subject"
+                          value={subject}
+                          checked={formData.subject === subject}
+                          onChange={handleChange}
+                          className="sr-only"
+                        />
+                        {subject}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
 
                 <div>
                   <label htmlFor="message" className="block text-sm text-zinc-400 mb-2">
@@ -307,7 +339,6 @@ const Contact = () => {
                   type="submit"
                   disabled={submitting}
                   className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
-                  whileHover={submitting ? {} : { scale: 1.02 }}
                   whileTap={submitting ? {} : { scale: 0.97 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                 >

@@ -329,7 +329,6 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
         <motion.button
           className="absolute top-6 left-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
           onClick={() => setIsPlaying(prev => !prev)}
-          whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           aria-label={isPlaying ? 'Pause diaporama' : 'Lancer le diaporama'}
         >
@@ -342,7 +341,6 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
         ref={closeButtonRef}
         className="absolute top-6 right-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
         onClick={onClose}
-        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         aria-label="Fermer"
       >
@@ -355,7 +353,6 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
           className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
           onClick={(e) => { e.stopPropagation(); pauseSlideshow(); onPrev(); }}
           aria-label="Image précédente"
-          whileHover={{ scale: 1.1, x: -4 }}
           whileTap={{ scale: 0.9 }}
         >
           <CaretLeft size={36} weight="light" />
@@ -366,7 +363,6 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
           className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
           onClick={(e) => { e.stopPropagation(); pauseSlideshow(); onNext(); }}
           aria-label="Image suivante"
-          whileHover={{ scale: 1.1, x: 4 }}
           whileTap={{ scale: 0.9 }}
         >
           <CaretRight size={36} weight="light" />
@@ -384,7 +380,6 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
         <div
           ref={photoContainerRef}
           className="relative w-full md:w-1/2 min-h-[50vh] md:min-h-[80vh] flex-shrink-0"
-          style={{ perspective: '1200px' }}
         >
           <motion.div
             className="w-full h-full relative"
@@ -397,14 +392,13 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
             initial={flipInitial}
             animate={{
               x: 0, y: 0, scaleX: 1, scaleY: 1, rotate: 0,
-              rotateY: [0, -25, 0], borderRadius: '0rem', opacity: 1,
+              borderRadius: '0rem', opacity: 1,
             }}
             exit={isDismissing
               ? { opacity: 0, y: 200, scale: 0.85 }
-              : { opacity: 0, scale: 0.85, rotateY: 30 }}
+              : { opacity: 0, scale: 0.9 }}
             transition={{
               type: 'spring', stiffness: 70, damping: 20,
-              rotateY: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
               opacity: { duration: 0.2 },
             }}
           >
@@ -474,7 +468,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
 
           {photo.technical && (
             <div className="mb-8 space-y-2">
-              <h3 className="text-sm uppercase tracking-widest text-zinc-500 mb-3">Détails techniques</h3>
+              <h3 className="text-sm uppercase tracking-widest text-zinc-400 mb-3">Détails techniques</h3>
               <p className="text-sm text-zinc-400">
                 <span className="text-zinc-300">Appareil</span> — {photo.technical.camera}
               </p>
@@ -493,7 +487,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
             const total = parseInt(parts[1], 10);
             return (
               <div className="mb-6">
-                <p className="text-zinc-500 text-sm font-light tracking-widest mb-2">{navigationInfo}</p>
+                <p className="text-zinc-400 text-sm font-light tracking-widest mb-2">{navigationInfo}</p>
                 <div className="w-full max-w-[200px] h-px bg-zinc-800 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-zinc-500"
@@ -523,6 +517,12 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
               </>
             )}
           </button>
+
+          {photo.purchasePrice && (
+            <p className="text-sm text-zinc-400 mb-3">
+              Tirages à partir de <span className="text-zinc-100">{photo.purchasePrice} €</span>
+            </p>
+          )}
 
           {photo.purchaseUrl ? (
             <a

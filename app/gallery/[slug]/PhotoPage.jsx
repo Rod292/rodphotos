@@ -33,7 +33,7 @@ const PhotoPage = ({ photo, prev, next }) => {
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Photo */}
           <motion.div
-            className="relative w-full lg:w-2/3 aspect-[4/3] rounded-lg overflow-hidden"
+            className="relative w-full lg:w-2/3 h-[65vh] lg:h-[calc(100dvh-10rem)] rounded-lg overflow-hidden"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 80, damping: 20 }}
@@ -62,7 +62,7 @@ const PhotoPage = ({ photo, prev, next }) => {
 
             {photo.technical && (
               <div className="mb-8 space-y-2">
-                <h2 className="text-sm uppercase tracking-widest text-zinc-500 mb-3">Détails techniques</h2>
+                <h2 className="text-sm uppercase tracking-widest text-zinc-400 mb-3">Détails techniques</h2>
                 <p className="text-sm text-zinc-400">
                   <span className="text-zinc-300">Appareil</span> — {photo.technical.camera}
                 </p>
@@ -75,12 +75,29 @@ const PhotoPage = ({ photo, prev, next }) => {
               </div>
             )}
 
-            <Link
-              href={`/contact?photo=${photo.id}`}
-              className="btn-primary inline-block text-center self-start mb-8"
-            >
-              Demander un tirage
-            </Link>
+            {photo.purchasePrice && (
+              <p className="text-sm text-zinc-400 mb-3">
+                Tirages à partir de <span className="text-zinc-100">{photo.purchasePrice} €</span>
+              </p>
+            )}
+
+            {photo.purchaseUrl ? (
+              <a
+                href={photo.purchaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary inline-block text-center self-start mb-8"
+              >
+                Acheter un tirage
+              </a>
+            ) : (
+              <Link
+                href={`/contact?photo=${photo.id}`}
+                className="btn-primary inline-block text-center self-start mb-8"
+              >
+                Demander un tirage
+              </Link>
+            )}
 
             {/* Prev/Next navigation */}
             <div className="flex items-center gap-4 pt-6 border-t border-zinc-800/50">

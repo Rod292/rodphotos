@@ -26,7 +26,7 @@ export default function NotFound() {
         <h1 className="text-xl md:text-2xl font-light tracking-tight mb-3">
           Page introuvable
         </h1>
-        <p className="text-zinc-500 font-light mb-10 leading-relaxed">
+        <p className="text-zinc-400 font-light mb-10 leading-relaxed">
           Cette page n&apos;existe pas ou a été déplacée.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

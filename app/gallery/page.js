@@ -3,10 +3,10 @@ import { photos, categories } from '../data/photos';
 
 export const metadata = {
   title: 'Galerie',
-  description: 'Galerie de photographies par ROD — Paysages, Portraits, Street, Voyage',
+  description: 'Galerie de photographies par ROD — Surf, Paysages, Street, Voyage',
   openGraph: {
     title: 'Galerie | ROD Photographie',
-    description: 'Galerie de photographies par ROD — Paysages, Portraits, Street, Voyage',
+    description: 'Galerie de photographies par ROD — Surf, Paysages, Street, Voyage',
     images: [{ url: '/photos/A7403945.jpg', width: 1200, height: 800, alt: 'Surfeur sur une vague turquoise' }],
   },
   alternates: {

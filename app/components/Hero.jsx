@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useMemo, useSyncExternalStore, useState, useCallback } from 'react';
 import { motion, useMotionValue, useSpring, AnimatePresence, useReducedMotion } from 'motion/react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { photos } from '../data/photos';
 import PhotoDetail from './PhotoDetail';
 
@@ -199,7 +198,7 @@ const Hero = () => {
 
   return (
     <motion.section
-      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-white touch-none cursor-grab active:cursor-grabbing"
+      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-zinc-950 touch-none cursor-grab active:cursor-grabbing"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -219,10 +218,12 @@ const Hero = () => {
           }}
         >
           {images.map((image, index) => (
-            <motion.div
+            <motion.button
+              type="button"
               key={image}
               ref={(el) => { thumbnailRefs.current[index] = el; }}
-              className="absolute cursor-pointer"
+              aria-label={`Voir « ${photos[index].title} »`}
+              className="absolute cursor-pointer p-0 rounded-lg"
               initial={{ opacity: 0 }}
               animate={{ opacity: selectedPhoto?.id === photos[index].id ? 0 : 1 }}
               transition={{
@@ -239,7 +240,7 @@ const Hero = () => {
               }}
               onClick={() => handlePhotoClick(index)}
             >
-              <div className="w-full h-full relative rounded-lg shadow-lg overflow-hidden">
+              <div className="w-full h-full relative rounded-lg shadow-lg shadow-black/40 overflow-hidden">
                 <Image
                   src={image}
                   alt={photos[index].alt}
@@ -252,18 +253,18 @@ const Hero = () => {
                   blurDataURL={photos[index].blurDataURL}
                 />
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </motion.div>
 
-        {/* Gradient for button readability */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white via-white/60 to-transparent z-30 pointer-events-none" />
+        {/* Dégradé pour la lisibilité de l'accroche (rendue par HeroLoader) */}
+        <div className="absolute bottom-0 left-0 right-0 h-72 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-30 pointer-events-none" />
 
         {/* Swipe hint — mobile only */}
         {isMobile && (
           <motion.div
             className="absolute z-40 flex items-center gap-3 text-zinc-400"
-            style={{ bottom: '14%' }}
+            style={{ bottom: 'calc(5% + 190px)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 1, 0] }}
             transition={{ duration: 8, delay: 1.5, times: [0, 0.05, 0.85, 1] }}
@@ -286,24 +287,6 @@ const Hero = () => {
           </motion.div>
         )}
 
-        <motion.div
-          className="absolute z-40 flex flex-col sm:flex-row gap-4"
-          style={{ bottom: isMobile ? '5%' : '32px' }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.6 }}
-        >
-          <Link href="/gallery">
-            <motion.span
-              className="btn-dark inline-block text-center"
-              whileHover={{ scale: 1.05, boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)' }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-            >
-              Découvrir la galerie
-            </motion.span>
-          </Link>
-        </motion.div>
       </div>
 
       <AnimatePresence>

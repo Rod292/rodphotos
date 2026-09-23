@@ -4,6 +4,7 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const MAX_LENGTHS = { name: 100, email: 254, phone: 30, message: 5000 };
+const SUBJECTS = ['Tirage', 'Séance photo', 'Collaboration', 'Autre'];
 // Un humain met plus de 3 s à remplir le formulaire ; les bots soumettent instantanément
 const MIN_FILL_TIME_MS = 3000;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -46,11 +47,17 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function buildHtml({ name, email, phone, message }) {
+function buildHtml({ name, email, phone, subject, message }) {
   const phoneRow = phone?.trim()
     ? `<tr>
         <td style="padding:6px 12px;color:#a1a1aa;font-size:13px;white-space:nowrap;vertical-align:top;">Téléphone</td>
         <td style="padding:6px 12px;color:#f4f4f5;font-size:14px;">${escapeHtml(phone)}</td>
+      </tr>`
+    : '';
+  const subjectRow = subject
+    ? `<tr>
+        <td style="padding:6px 12px;color:#a1a1aa;font-size:13px;white-space:nowrap;vertical-align:top;">Objet</td>
+        <td style="padding:6px 12px;color:#f4f4f5;font-size:14px;">${escapeHtml(subject)}</td>
       </tr>`
     : '';
 
@@ -83,6 +90,7 @@ function buildHtml({ name, email, phone, message }) {
                 </td>
               </tr>
               ${phoneRow}
+              ${subjectRow}
             </table>
           </td>
         </tr>
@@ -130,6 +138,8 @@ export async function POST(request) {
     const email = typeof body.email === 'string' ? body.email.trim() : '';
     const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
     const message = typeof body.message === 'string' ? body.message.trim() : '';
+    // Liste fermée : toute autre valeur est ignorée
+    const subject = SUBJECTS.includes(body.subject) ? body.subject : '';
 
     // Détection de bots : on renvoie un faux succès sans envoyer d'email,
     // pour ne pas leur indiquer que la soumission a été bloquée
@@ -173,14 +183,15 @@ export async function POST(request) {
     }
 
     const phoneLine = phone?.trim() ? `\nTéléphone: ${phone}` : '';
+    const subjectLine = subject ? `\nObjet: ${subject}` : '';
 
     const { data, error: sendError } = await resend.emails.send({
       from: 'ROD Photos <contact@photosrod.com>',
       to: 'contact@photosrod.com',
       replyTo: email,
-      subject: `Nouveau message de ${name}`,
-      text: `Nom: ${name}\nEmail: ${email}${phoneLine}\n\nMessage:\n${message}`,
-      html: buildHtml({ name, email, phone, message }),
+      subject: subject ? `[${subject}] Nouveau message de ${name}` : `Nouveau message de ${name}`,
+      text: `Nom: ${name}\nEmail: ${email}${phoneLine}${subjectLine}\n\nMessage:\n${message}`,
+      html: buildHtml({ name, email, phone, subject, message }),
     });
 
     if (sendError) {

@@ -46,23 +46,34 @@ html, body {
   transform: scale(0.98) translateY(1px);
 }
 
-.btn-dark {
-  background-color: rgb(9, 9, 11);
-  color: rgb(244, 244, 245);
-  border: 1px solid rgb(9, 9, 11);
+.btn-light {
+  display: inline-block;
+  background-color: rgb(244, 244, 245);
+  color: rgb(9, 9, 11);
+  border: 1px solid rgb(244, 244, 245);
   padding: 0.75rem 1.5rem;
   border-radius: 9999px;
   font-weight: 400;
   letter-spacing: 0.02em;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-dark:hover {
-  background-color: rgb(24, 24, 27);
+.btn-light:hover {
+  background-color: rgb(212, 212, 216);
 }
 
-.btn-dark:active {
+.btn-light:active {
   transform: scale(0.98) translateY(1px);
+}
+
+/* Accroche de l'accueil */
+.hero-intro {
+  animation: hero-intro-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+
+@keyframes hero-intro-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Skip to content */

@@ -8,6 +8,7 @@ import { photos, categories } from '../data/photos';
 import PhotoDetail from './PhotoDetail';
 import FavoriteButton from './FavoriteButton';
 import { useFavorites } from '../hooks/useFavorites';
+import { useLightboxHistory } from '../hooks/useLightboxHistory';
 
 function getMasonryColumns(items, columnCount) {
   const columns = Array.from({ length: columnCount }, () => []);
@@ -16,15 +17,15 @@ function getMasonryColumns(items, columnCount) {
   items.forEach((item, index) => {
     const shortest = heights.indexOf(Math.min(...heights));
     columns[shortest].push({ ...item, originalIndex: index });
-    heights[shortest] += 1;
+    heights[shortest] += item.height / item.width;
   });
 
   return columns;
 }
 
-const Gallery = () => {
+const Gallery = ({ initialFilter = 'all' }) => {
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState(initialFilter);
   const [sourceRect, setSourceRect] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState({});
@@ -46,6 +47,12 @@ const Gallery = () => {
   }, [filter, favorites]);
 
   const selectedImage = selectedIndex !== null ? filteredImages[selectedIndex] : null;
+
+  const changeFilter = useCallback((id) => {
+    setFilter(id);
+    const url = id === 'all' || id === 'favorites' ? '/gallery' : `/gallery/${id}`;
+    window.history.replaceState(null, '', url);
+  }, []);
 
   // Responsive column count
   useEffect(() => {
@@ -98,10 +105,12 @@ const Gallery = () => {
     setSelectedIndex(index);
   }, []);
 
-  const closeImage = useCallback(() => {
+  const handleClosed = useCallback(() => {
     setSelectedIndex(null);
     setSourceRect(null);
   }, []);
+
+  const closeImage = useLightboxHistory(selectedImage?.id, handleClosed);
 
   const goNext = useCallback(() => {
     setSelectedIndex(prev =>
@@ -146,6 +155,10 @@ const Gallery = () => {
     setFilter('all');
   }
 
+  const heading = filter === 'all' || filter === 'favorites'
+    ? 'Galerie'
+    : allCategories.find(c => c.id === filter)?.label || 'Galerie';
+
   const handleImageLoad = useCallback((imageId) => {
     setImagesLoaded(prev => ({ ...prev, [imageId]: true }));
   }, []);
@@ -174,7 +187,7 @@ const Gallery = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20 }}
         >
-          Galerie
+          {heading}
         </motion.h1>
 
         <motion.div
@@ -188,14 +201,13 @@ const Gallery = () => {
           {allCategories.map(category => (
             <motion.button
               key={category.id}
-              onClick={() => setFilter(category.id)}
+              onClick={() => changeFilter(category.id)}
               aria-pressed={filter === category.id}
               className={`relative px-5 py-2 rounded-full text-sm tracking-wide transition-colors ${
                 filter === category.id
                   ? 'text-zinc-950'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                  : 'text-zinc-300 hover:text-white'
               }`}
-              whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
             >
@@ -215,7 +227,7 @@ const Gallery = () => {
                 ) : (
                   <>
                     {category.label}
-                    <span className={`ml-1.5 ${filter === category.id ? 'text-zinc-500' : 'text-zinc-600'}`}>
+                    <span className={`ml-1.5 ${filter === category.id ? 'text-zinc-600' : 'text-zinc-400'}`}>
                       {category.id === 'all' ? photos.length : photos.filter(p => p.category === category.id).length}
                     </span>
                   </>
@@ -245,58 +257,67 @@ const Gallery = () => {
                   <motion.div
                     key={image.path}
                     ref={(el) => { thumbnailRefs.current[image.originalIndex] = el; }}
-                    className="rounded-lg overflow-hidden cursor-pointer group relative"
+                    className="rounded-lg overflow-hidden group relative"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-50px' }}
                     transition={{ type: 'spring', stiffness: 200, damping: 20, delay: (indexInColumn % 4) * 0.06 }}
-                    whileHover={{ scale: 1.02 }}
-                    onMouseEnter={() => preloadFullImage(image)}
-                    onTouchStart={() => preloadFullImage(image)}
-                    onClick={() => openImage(image.originalIndex)}
                   >
-                    {!imagesLoaded[image.id] && !imageErrors[image.id] && (
-                      <div className="skeleton absolute inset-0" />
-                    )}
-                    {imageErrors[image.id] ? (
-                      <div className="w-full aspect-[3/4] bg-zinc-900 flex items-center justify-center rounded-lg">
-                        <div className="text-center text-zinc-600">
-                          <svg className="mx-auto mb-2" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <path d="m21 15-5-5L5 21" />
-                          </svg>
-                          <p className="text-xs">Image indisponible</p>
+                    <button
+                      type="button"
+                      className="block w-full text-left cursor-pointer rounded-lg focus-visible:outline-offset-[-2px]"
+                      aria-label={`Voir « ${image.title} »`}
+                      onMouseEnter={() => preloadFullImage(image)}
+                      onTouchStart={() => preloadFullImage(image)}
+                      onFocus={() => preloadFullImage(image)}
+                      onClick={() => openImage(image.originalIndex)}
+                    >
+                      {!imagesLoaded[image.id] && !imageErrors[image.id] && (
+                        <div className="skeleton absolute inset-0" />
+                      )}
+                      {imageErrors[image.id] ? (
+                        <div
+                          className="w-full bg-zinc-900 flex items-center justify-center rounded-lg"
+                          style={{ aspectRatio: `${image.width} / ${image.height}` }}
+                        >
+                          <div className="text-center text-zinc-400">
+                            <svg className="mx-auto mb-2" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="2" />
+                              <circle cx="8.5" cy="8.5" r="1.5" />
+                              <path d="m21 15-5-5L5 21" />
+                            </svg>
+                            <p className="text-xs">Image indisponible</p>
+                          </div>
                         </div>
+                      ) : (
+                        <Image
+                          src={image.path}
+                          alt={image.alt}
+                          width={image.width}
+                          height={image.height}
+                          loading="lazy"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                          placeholder={image.blurDataURL ? 'blur' : 'empty'}
+                          blurDataURL={image.blurDataURL}
+                          onLoad={() => handleImageLoad(image.id)}
+                          onError={() => handleImageError(image.id)}
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 group-focus-within:translate-y-0 transition-transform duration-500 ease-out">
+                        <p className="text-sm text-zinc-100 font-light tracking-wide">{image.title}</p>
                       </div>
-                    ) : (
-                      <Image
-                        src={image.path}
-                        alt={image.alt}
-                        width={600}
-                        height={800}
-                        loading="lazy"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        className="w-full h-auto transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-                        placeholder={image.blurDataURL ? 'blur' : 'empty'}
-                        blurDataURL={image.blurDataURL}
-                        onLoad={() => handleImageLoad(image.id)}
-                        onError={() => handleImageError(image.id)}
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-zinc-950/0 group-hover:bg-zinc-950/30 transition-colors duration-500" />
+                    </button>
 
-                    {/* Favorite overlay */}
-                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {/* Favori : toujours visible sur écran tactile, au survol/focus sinon */}
+                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100 transition-opacity duration-300">
                       <FavoriteButton
                         isFavorite={isFavorite(image.id)}
                         onToggle={() => toggle(image.id)}
                         size={20}
+                        overlay
                       />
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                      <p className="text-sm text-zinc-300 font-light tracking-wide">{image.alt}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -311,7 +332,7 @@ const Gallery = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <p className="text-zinc-500 text-lg font-light">
+            <p className="text-zinc-400 text-lg font-light">
               {filter === 'favorites' ? 'Aucun favori pour le moment.' : 'Aucune image dans cette catégorie.'}
             </p>
           </motion.div>
@@ -345,7 +366,6 @@ const Gallery = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.2 }}
-            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
             <ArrowUp size={22} weight="bold" />
