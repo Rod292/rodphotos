@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
+import { spring } from '../lib/motion';
 import Image from 'next/image';
 import { Envelope, MapPin, InstagramLogo, CheckCircle } from '@phosphor-icons/react';
 import { photos } from '../data/photos';
@@ -108,29 +109,17 @@ const Contact = () => {
   };
 
   return (
-    <motion.section
-      className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950 text-zinc-100"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+    <section
+      className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950 text-zinc-100">
       <div className="max-w-[1400px] mx-auto">
-        <motion.h1
-          className="text-4xl md:text-6xl tracking-tighter leading-none mb-8 md:mb-12 font-light"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-        >
+        <h1
+          className="text-4xl md:text-6xl tracking-tighter leading-none mb-8 md:mb-12 font-light">
           Contact
-        </motion.h1>
+        </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
           {/* Left column: contact info + photo if selected */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.1 }}
-          >
+          <motion.div>
             <h2 className="text-xl font-light mb-6 tracking-tight">Échangeons</h2>
             <p className="text-base text-zinc-400 mb-8 leading-relaxed max-w-[65ch]">
               {"Pour l'achat d'un tirage, une demande de collaboration, un shooting ou simplement pour échanger sur la photographie, n'hésitez pas à me contacter."}
@@ -166,9 +155,6 @@ const Contact = () => {
             {selectedPhoto && (
               <motion.div
                 className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-4 overflow-hidden"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.15 }}
               >
                 <div className="rounded-lg overflow-hidden mb-4">
                   <Image
@@ -187,17 +173,13 @@ const Contact = () => {
           </motion.div>
 
           {/* Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.2 }}
-          >
+          <motion.div>
             {formStatus.submitted && formStatus.success ? (
               <motion.div
                 className="rounded-xl p-8 text-center border border-emerald-900/30 bg-emerald-950/20 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                transition={spring.smooth}
               >
                 <CheckCircle size={48} weight="light" className="mx-auto text-emerald-400 mb-4" />
                 <h3 className="text-xl font-light text-emerald-300 mb-2">Message envoyé</h3>
@@ -340,7 +322,7 @@ const Contact = () => {
                   disabled={submitting}
                   className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
                   whileTap={submitting ? {} : { scale: 0.97 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                  transition={spring.smooth}
                 >
                   {submitting ? (
                     <span className="inline-flex items-center gap-2">
@@ -357,7 +339,7 @@ const Contact = () => {
           </motion.div>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 

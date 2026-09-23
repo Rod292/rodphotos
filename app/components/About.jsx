@@ -8,29 +8,17 @@ import { InstagramLogo } from '@phosphor-icons/react';
 
 const About = () => {
   return (
-    <motion.section
-      className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950 text-zinc-100"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+    <section
+      className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950 text-zinc-100">
       <div className="max-w-[1400px] mx-auto">
-        <motion.h1
-          className="text-4xl md:text-6xl tracking-tighter leading-none mb-10 md:mb-16 font-light"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-        >
+        <h1
+          className="text-4xl md:text-6xl tracking-tighter leading-none mb-10 md:mb-16 font-light">
           À propos
-        </motion.h1>
+        </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-10 md:gap-16 items-start">
           <motion.div
             className="relative w-full aspect-[3/4] max-h-[70vh] rounded-lg overflow-hidden"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.1 }}
           >
             <Image
               src="/ROD.png"
@@ -44,10 +32,6 @@ const About = () => {
 
           <motion.div
             className="flex flex-col justify-start pt-0 md:pt-8"
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.2 }}
           >
             <h2 className="text-3xl md:text-4xl tracking-tighter font-light mb-6">ROD</h2>
             <div className="space-y-4 max-w-[65ch]">
@@ -83,7 +67,7 @@ const About = () => {
           </motion.div>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 

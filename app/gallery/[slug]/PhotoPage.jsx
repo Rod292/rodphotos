@@ -7,19 +7,12 @@ import { CaretLeft, CaretRight, ArrowLeft } from '@phosphor-icons/react';
 
 const PhotoPage = ({ photo, prev, next }) => {
   return (
-    <motion.section
-      className="min-h-[100dvh] w-full bg-zinc-950 text-zinc-100 pt-20"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-    >
+    <section
+      className="min-h-[100dvh] w-full bg-zinc-950 text-zinc-100 pt-20">
       <div className="max-w-7xl mx-auto px-4 md:px-10">
         {/* Back button */}
         <motion.div
           className="mb-6"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
         >
           <Link
             href="/gallery"
@@ -34,9 +27,6 @@ const PhotoPage = ({ photo, prev, next }) => {
           {/* Photo */}
           <motion.div
             className="relative w-full lg:w-2/3 h-[65vh] lg:h-[calc(100dvh-10rem)] rounded-lg overflow-hidden"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 80, damping: 20 }}
           >
             <Image
               src={photo.path}
@@ -53,9 +43,6 @@ const PhotoPage = ({ photo, prev, next }) => {
           {/* Details */}
           <motion.div
             className="lg:w-1/3 flex flex-col justify-center pb-12 lg:pb-0"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.15 }}
           >
             <h1 className="text-3xl md:text-4xl font-light tracking-tight mb-4">{photo.title}</h1>
             <p className="text-zinc-400 font-light leading-relaxed mb-8">{photo.description}</p>
@@ -126,7 +113,7 @@ const PhotoPage = ({ photo, prev, next }) => {
           </motion.div>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 

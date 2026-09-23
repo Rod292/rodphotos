@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
+import { spring } from '../lib/motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -49,9 +50,6 @@ const Header = () => {
   return (
     <motion.header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${headerBg}`}
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.2 }}
     >
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-4 flex justify-between items-center">
         <Link href="/" aria-label="ROD - Accueil">
@@ -75,7 +73,7 @@ const Header = () => {
                     <motion.span
                       className="absolute -bottom-1 left-0 right-0 h-px bg-zinc-400"
                       layoutId="nav-underline"
-                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                      transition={spring.snappy}
                     />
                   )}
                 </span>
@@ -109,7 +107,7 @@ const Header = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+            transition={spring.smooth}
             aria-label="Navigation mobile"
           >
             <div className="max-w-[1400px] mx-auto px-6 py-6 flex flex-col gap-4">
@@ -118,7 +116,7 @@ const Header = () => {
                   key={item.href}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ type: 'spring', stiffness: 150, damping: 20, delay: index * 0.05 }}
+                  transition={{ ...spring.smooth, delay: index * 0.05 }}
                 >
                   <Link href={item.href} onClick={closeMenu} aria-current={isActive(item.href) ? 'page' : undefined}>
                     <span className={`block py-2 text-lg font-light tracking-wide transition-colors ${

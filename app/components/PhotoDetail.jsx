@@ -1,111 +1,338 @@
 'use client';
 
-import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
-import { motion, useMotionValue, useReducedMotion, useTransform, animate } from 'motion/react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+  animate,
+  usePresence,
+} from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, CaretLeft, CaretRight, ShareNetwork, Check, Play, Pause } from '@phosphor-icons/react';
 import FavoriteButton from './FavoriteButton';
+import { spring, fade } from '../lib/motion';
 
-const SWIPE_THRESHOLD = 50;
-const VELOCITY_THRESHOLD = 300;
+const SWIPE_OFFSET = 80;
+const SWIPE_VELOCITY = 400;
+const DISMISS_OFFSET = 100;
+const DISMISS_VELOCITY = 500;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
+const SLIDESHOW_DELAY_MS = 5000;
+const SLIDE_ENTER_OFFSET = 200;
+const SLIDE_EXIT_OFFSET = 300;
+const THUMB_RADIUS = 8;
 
-const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, nextPhoto, navigationInfo, isFavorite, onToggleFavorite }) => {
+function isInViewport(rect) {
+  return (
+    rect.cy + rect.height / 2 > 0 &&
+    rect.cy - rect.height / 2 < window.innerHeight &&
+    rect.cx + rect.width / 2 > 0 &&
+    rect.cx - rect.width / 2 < window.innerWidth
+  );
+}
+
+function normalizeAngle(deg) {
+  let a = deg % 360;
+  if (a > 180) a -= 360;
+  if (a < -180) a += 360;
+  return a;
+}
+
+// Transformation qui superpose la photo de la visionneuse à sa vignette.
+// La boîte de la photo a exactement le format de l'image : l'échelle est donc uniforme,
+// sans déformation. Centre de la boîte = centre de la scène (flex centré).
+function getThumbnailTransform(thumb, box, stage) {
+  const stageRect = stage.getBoundingClientRect();
+  const scale = Math.max(thumb.width / box.offsetWidth, thumb.height / box.offsetHeight);
+  return {
+    x: thumb.cx - (stageRect.left + stageRect.width / 2),
+    y: thumb.cy - (stageRect.top + stageRect.height / 2),
+    scale,
+    rotate: normalizeAngle(thumb.rotation || 0),
+    radius: THUMB_RADIUS / scale,
+  };
+}
+
+function getOptimizedUrl(path) {
+  const dpr = window.devicePixelRatio || 1;
+  const vw = window.innerWidth;
+  const displayWidth = vw < 768 ? vw : vw * 0.5;
+  const neededWidth = Math.round(displayWidth * dpr);
+  const availableWidths = [640, 750, 828, 1080, 1200, 1920, 2048, 3840];
+  const width = availableWidths.find(w => w >= neededWidth) || availableWidths[availableWidths.length - 1];
+  return `/_next/image?url=${encodeURIComponent(path)}&w=${width}&q=75`;
+}
+
+const slideVariants = {
+  enter: ({ direction = 1, reduced = false } = {}) => (reduced ? { opacity: 0 } : { x: direction * SLIDE_ENTER_OFFSET, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: ({ direction = 1, reduced = false } = {}) => (reduced ? { opacity: 0 } : { x: direction * -SLIDE_EXIT_OFFSET, opacity: 0 }),
+};
+
+const Slide = ({ photo, custom, isInitial, placeholderSrc, setBoxRef, radius, dragY, zoom, isZoomed, onSwipe, onDismiss, onDoubleClick }) => {
+  const [loaded, setLoaded] = useState(false);
+  const ratio = photo.width / photo.height;
+
+  const handleDragEnd = (_, { offset, velocity }) => {
+    if (Math.abs(offset.x) > Math.abs(offset.y)) {
+      if (offset.x < -SWIPE_OFFSET || velocity.x < -SWIPE_VELOCITY) onSwipe(1);
+      else if (offset.x > SWIPE_OFFSET || velocity.x > SWIPE_VELOCITY) onSwipe(-1);
+    } else if (offset.y > DISMISS_OFFSET || velocity.y > DISMISS_VELOCITY) {
+      onDismiss();
+    }
+  };
+
+  return (
+    <motion.div
+      className="absolute inset-0 flex items-center justify-center touch-none"
+      variants={slideVariants}
+      // La photo qui entre lit `custom` ici ; celle qui sort le reçoit d'AnimatePresence
+      custom={custom}
+      initial={isInitial ? false : 'enter'}
+      animate="center"
+      exit="exit"
+      transition={{ x: spring.smooth, opacity: fade.base }}
+      style={{ y: dragY }}
+      // Suit le doigt : horizontal = photo voisine, vers le bas = fermer
+      drag={!isZoomed}
+      dragDirectionLock
+      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+      dragElastic={{ left: 0.9, right: 0.9, top: 0.05, bottom: 0.6 }}
+      onDragEnd={handleDragEnd}
+    >
+      <motion.div
+        ref={setBoxRef}
+        className="relative overflow-hidden"
+        style={{
+          // Plus grande boîte au format de la photo qui tient dans la scène (équivalent de object-fit: contain)
+          width: `min(100cqw, 100cqh * ${ratio})`,
+          height: `min(100cqh, 100cqw / ${ratio})`,
+          borderRadius: radius,
+          backgroundImage: photo.blurDataURL ? `url(${photo.blurDataURL})` : undefined,
+          backgroundSize: 'cover',
+        }}
+      >
+        <motion.div
+          className="w-full h-full relative"
+          style={{ scale: zoom.scale, x: zoom.panX, y: zoom.panY }}
+          drag={isZoomed}
+          dragConstraints={{ left: -200, right: 200, top: -200, bottom: 200 }}
+          dragElastic={0.1}
+          onDoubleClick={onDoubleClick}
+        >
+          {/* Vignette déjà en cache : affichée tout de suite, sous l'image pleine résolution */}
+          {placeholderSrc && !loaded && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={placeholderSrc}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+          )}
+          <Image
+            src={photo.path}
+            alt={photo.alt}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className={`object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+            priority
+            draggable={false}
+            onLoad={() => setLoaded(true)}
+          />
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const PhotoDetail = ({
+  photo,
+  getThumbnailRect,
+  onClose,
+  onNext,
+  onPrev,
+  prevPhoto,
+  nextPhoto,
+  navigationInfo,
+  isFavorite,
+  onToggleFavorite,
+}) => {
   const prefersReducedMotion = useReducedMotion();
-  const photoContainerRef = useRef(null);
+  const [isPresent, safeToRemove] = usePresence();
+
   const dialogRef = useRef(null);
+  const stageRef = useRef(null);
+  const boxRef = useRef(null);
   const closeButtonRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
-  const imageWrapperRef = useRef(null);
 
+  const [placeholderSrc] = useState(() => getThumbnailRect?.(photo.id)?.src || null);
+  const [direction, setDirection] = useState(1);
+  const [hasNavigated, setHasNavigated] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [shareStatus, setShareStatus] = useState(null);
-  const [fullImageLoaded, setFullImageLoaded] = useState(false);
+
+  // Transformation de la scène pour l'ouverture / fermeture depuis la vignette
+  const flipX = useMotionValue(0);
+  const flipY = useMotionValue(0);
+  const flipScale = useMotionValue(1);
+  const flipRotate = useMotionValue(0);
+  const flipOpacity = useMotionValue(1);
+  const radius = useMotionValue(0);
+
+  // Fond et interface (boutons, panneau) apparaissent / disparaissent ensemble
+  const presence = useMotionValue(0);
+  const chromeOpacity = useMotionValue(0);
+  const dragY = useMotionValue(0);
+  const backdropOpacity = useTransform([presence, dragY], ([p, y]) => p * Math.max(0, 1 - Math.max(0, y) / 300));
 
   const scaleRef = useRef(1);
-  const scale = useMotionValue(1);
-  const panX = useMotionValue(0);
-  const panY = useMotionValue(0);
-
-  const dismissY = useMotionValue(0);
-  const dismissScale = useTransform(dismissY, [0, 300], [1, 0.9]);
-  const backdropOpacity = useTransform(dismissY, [0, 300], [1, 0]);
-  const [isDismissing, setIsDismissing] = useState(false);
-
+  const zoom = {
+    scale: useMotionValue(1),
+    panX: useMotionValue(0),
+    panY: useMotionValue(0),
+  };
   const pinchStartDistRef = useRef(0);
   const pinchStartScaleRef = useRef(1);
 
-  const pauseSlideshow = useCallback(() => {
-    setIsPlaying(false);
+  const setBoxRef = useCallback((el) => {
+    // Pendant un glissement, deux photos coexistent : on garde la dernière montée
+    if (el) boxRef.current = el;
   }, []);
 
-  // Reset state when photo changes (adjustment during render)
+  const resetZoom = useCallback(() => {
+    scaleRef.current = 1;
+    zoom.scale.set(1);
+    zoom.panX.set(0);
+    zoom.panY.set(0);
+    setIsZoomed(false);
+  }, [zoom.scale, zoom.panX, zoom.panY]);
+
+  // Ouverture : la photo part de sa vignette
+  useLayoutEffect(() => {
+    animate(presence, 1, fade.base);
+    animate(chromeOpacity, 1, { ...fade.base, delay: 0.1 });
+
+    if (prefersReducedMotion) return;
+    const thumb = getThumbnailRect?.(photo.id);
+    if (!thumb || !boxRef.current || !stageRef.current || !isInViewport(thumb)) {
+      flipOpacity.set(0);
+      flipScale.set(0.95);
+      animate(flipOpacity, 1, fade.base);
+      animate(flipScale, 1, spring.gentle);
+      return;
+    }
+    const from = getThumbnailTransform(thumb, boxRef.current, stageRef.current);
+    flipX.set(from.x);
+    flipY.set(from.y);
+    flipScale.set(from.scale);
+    flipRotate.set(from.rotate);
+    radius.set(from.radius);
+    animate(flipX, 0, spring.gentle);
+    animate(flipY, 0, spring.gentle);
+    animate(flipScale, 1, spring.gentle);
+    animate(flipRotate, 0, spring.gentle);
+    animate(radius, 0, spring.gentle);
+    // Uniquement au montage : les changements de photo passent par le glissement
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fermeture (bouton, Échap, swipe, bouton retour du navigateur) : la photo
+  // retourne dans sa vignette, puis le composant est retiré
+  useEffect(() => {
+    if (isPresent) return;
+    const thumb = getThumbnailRect?.(photo.id);
+    const animations = [
+      animate(presence, 0, fade.base),
+      animate(chromeOpacity, 0, fade.fast),
+      animate(dragY, 0, spring.smooth),
+      animate(zoom.scale, 1, spring.smooth),
+      animate(zoom.panX, 0, spring.smooth),
+      animate(zoom.panY, 0, spring.smooth),
+    ];
+    if (!prefersReducedMotion && thumb && boxRef.current && stageRef.current && isInViewport(thumb)) {
+      const to = getThumbnailTransform(thumb, boxRef.current, stageRef.current);
+      animations.push(
+        animate(flipX, to.x, spring.smooth),
+        animate(flipY, to.y, spring.smooth),
+        animate(flipScale, to.scale, spring.smooth),
+        animate(flipRotate, to.rotate, spring.smooth),
+        animate(radius, to.radius, spring.smooth),
+      );
+    } else {
+      animations.push(animate(flipOpacity, 0, fade.fast));
+    }
+    Promise.all(animations).then(safeToRemove);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPresent]);
+
+  const pauseSlideshow = useCallback(() => setIsPlaying(false), []);
+
+  const navigate = useCallback((dir) => {
+    const handler = dir > 0 ? onNext : onPrev;
+    if (!handler) return;
+    setDirection(dir);
+    setHasNavigated(true);
+    handler();
+  }, [onNext, onPrev]);
+
+  // Changement de photo : zoom et glissement vertical remis à zéro
   const [prevPhotoId, setPrevPhotoId] = useState(photo.id);
   if (prevPhotoId !== photo.id) {
     setPrevPhotoId(photo.id);
     setIsZoomed(false);
-    setFullImageLoaded(false);
-    setIsDismissing(false);
   }
-
-  // Reset zoom motion values when photo changes
   useEffect(() => {
     scaleRef.current = 1;
-    scale.set(1);
-    panX.set(0);
-    panY.set(0);
-    dismissY.set(0);
-  }, [photo.id, scale, panX, panY, dismissY]);
+    zoom.scale.set(1);
+    zoom.panX.set(0);
+    zoom.panY.set(0);
+    dragY.set(0);
+  }, [photo.id, zoom.scale, zoom.panX, zoom.panY, dragY]);
 
-  // Prefetch adjacent images with Next.js optimized URLs
+  // Précharge les photos voisines
   useEffect(() => {
-    const dpr = window.devicePixelRatio || 1;
-    const vw = window.innerWidth;
-    const isMobile = vw < 768;
-    const displayWidth = isMobile ? vw : vw * 0.5;
-    const neededWidth = Math.round(displayWidth * dpr);
-    const availableWidths = [640, 750, 828, 1080, 1200, 1920, 2048, 3840];
-    const targetWidth = availableWidths.find(w => w >= neededWidth) || availableWidths[availableWidths.length - 1];
-
     [prevPhoto, nextPhoto].forEach(p => {
       if (p) {
         const img = new window.Image();
-        img.src = `/_next/image?url=${encodeURIComponent(p.path)}&w=${targetWidth}&q=75`;
+        img.src = getOptimizedUrl(p.path);
       }
     });
   }, [prevPhoto, nextPhoto]);
 
-  // Slideshow auto-advance
+  // Diaporama : le minuteur repart à chaque photo, synchronisé avec la barre de progression
   useEffect(() => {
     if (!isPlaying || !onNext) return;
-    const interval = setInterval(() => {
-      onNext();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isPlaying, onNext]);
+    const timeout = setTimeout(() => navigate(1), SLIDESHOW_DELAY_MS);
+    return () => clearTimeout(timeout);
+  }, [isPlaying, onNext, navigate, photo.id]);
 
-  // Focus management
+  // Focus + page figée derrière la visionneuse
   useEffect(() => {
     previouslyFocusedRef.current = document.activeElement;
-    const timer = setTimeout(() => {
-      closeButtonRef.current?.focus();
-    }, 100);
+    const timer = setTimeout(() => closeButtonRef.current?.focus(), 100);
+    document.body.style.overflow = 'hidden';
     return () => {
       clearTimeout(timer);
+      document.body.style.overflow = '';
       previouslyFocusedRef.current?.focus();
     };
   }, []);
 
-  // Keyboard + focus trap
+  // Clavier + piège à focus
   useEffect(() => {
+    if (!isPresent) return;
     const handleKeyDown = (e) => {
-      pauseSlideshow();
       if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowRight' && onNext && !isZoomed) onNext();
-      if (e.key === 'ArrowLeft' && onPrev && !isZoomed) onPrev();
+      if (e.key === 'ArrowRight' && !isZoomed) { pauseSlideshow(); navigate(1); }
+      if (e.key === 'ArrowLeft' && !isZoomed) { pauseSlideshow(); navigate(-1); }
 
       if (e.key === 'Tab' && dialogRef.current) {
         const focusable = dialogRef.current.querySelectorAll(
@@ -114,53 +341,38 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
         if (focusable.length === 0) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-        if (e.shiftKey) {
-          if (document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-          }
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
         }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [onClose, onNext, onPrev, isZoomed, pauseSlideshow]);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPresent, onClose, navigate, isZoomed, pauseSlideshow]);
 
-  // Scroll wheel zoom (desktop)
+  // Zoom à la molette (desktop) et au pincement (mobile), sur la scène qui reste montée
   useEffect(() => {
-    const el = imageWrapperRef.current;
+    const el = stageRef.current;
     if (!el) return;
 
-    const handleWheel = (e) => {
-      e.preventDefault();
-      const delta = -e.deltaY * 0.002;
-      const newScale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, scaleRef.current + delta));
+    const applyScale = (newScale) => {
       scaleRef.current = newScale;
-      scale.set(newScale);
+      zoom.scale.set(newScale);
       setIsZoomed(newScale > 1);
       if (newScale === 1) {
-        panX.set(0);
-        panY.set(0);
+        zoom.panX.set(0);
+        zoom.panY.set(0);
       }
     };
 
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
-  }, [scale, panX, panY]);
-
-  // Pinch-to-zoom (mobile)
-  useEffect(() => {
-    const el = imageWrapperRef.current;
-    if (!el) return;
+    const handleWheel = (e) => {
+      e.preventDefault();
+      applyScale(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, scaleRef.current - e.deltaY * 0.002)));
+    };
 
     const getDistance = (touches) => {
       const dx = touches[0].clientX - touches[1].clientX;
@@ -179,66 +391,36 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
     const handleTouchMove = (e) => {
       if (e.touches.length === 2) {
         e.preventDefault();
-        const dist = getDistance(e.touches);
-        const ratio = dist / pinchStartDistRef.current;
-        const newScale = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchStartScaleRef.current * ratio));
-        scaleRef.current = newScale;
-        scale.set(newScale);
-        setIsZoomed(newScale > 1);
-        if (newScale === 1) {
-          panX.set(0);
-          panY.set(0);
-        }
+        const ratio = getDistance(e.touches) / pinchStartDistRef.current;
+        applyScale(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchStartScaleRef.current * ratio)));
       }
     };
 
+    el.addEventListener('wheel', handleWheel, { passive: false });
     el.addEventListener('touchstart', handleTouchStart, { passive: false });
     el.addEventListener('touchmove', handleTouchMove, { passive: false });
     return () => {
+      el.removeEventListener('wheel', handleWheel);
       el.removeEventListener('touchstart', handleTouchStart);
       el.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [scale, panX, panY]);
+  }, [zoom.scale, zoom.panX, zoom.panY]);
 
-  // Double-click/tap zoom toggle
   const handleDoubleClick = useCallback(() => {
     if (scaleRef.current > 1) {
-      scaleRef.current = 1;
-      scale.set(1);
-      panX.set(0);
-      panY.set(0);
-      setIsZoomed(false);
+      resetZoom();
     } else {
       scaleRef.current = 2;
-      scale.set(2);
+      animate(zoom.scale, 2, spring.snappy);
       setIsZoomed(true);
     }
-  }, [scale, panX, panY]);
+  }, [resetZoom, zoom.scale]);
 
-  // Dismiss drag end: swipe down to close
-  const handleDismissDragEnd = useCallback((_, info) => {
-    if (isZoomed) return;
-    if (info.offset.y > 100 || info.velocity.y > 500) {
-      setIsDismissing(true);
-      onClose();
-    } else {
-      animate(dismissY, 0, { type: 'spring', stiffness: 300, damping: 30 });
-    }
-  }, [isZoomed, onClose, dismissY]);
-
-  // Drag end: swipe navigation when not zoomed
-  const handleDragEnd = useCallback((_, info) => {
-    if (isZoomed) return;
+  const handleSwipe = useCallback((dir) => {
     pauseSlideshow();
-    const { offset, velocity } = info;
-    if (offset.x > SWIPE_THRESHOLD || velocity.x > VELOCITY_THRESHOLD) {
-      onPrev?.();
-    } else if (offset.x < -SWIPE_THRESHOLD || velocity.x < -VELOCITY_THRESHOLD) {
-      onNext?.();
-    }
-  }, [isZoomed, onNext, onPrev, pauseSlideshow]);
+    navigate(dir);
+  }, [pauseSlideshow, navigate]);
 
-  // Share handler
   const handleShare = useCallback(async () => {
     const url = `${window.location.origin}/gallery/${photo.id}`;
     const shareData = { title: photo.title, text: photo.description, url };
@@ -247,7 +429,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
       try {
         await navigator.share(shareData);
       } catch {
-        // User cancelled
+        // Partage annulé
       }
     } else {
       await navigator.clipboard.writeText(url);
@@ -256,251 +438,173 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
     }
   }, [photo]);
 
-  // FLIP initial transform (skip when prefers-reduced-motion)
-  const flipInitial = useMemo(() => {
-    if (prefersReducedMotion) {
-      return {
-        scaleX: 1, scaleY: 1, x: 0, y: 0,
-        rotate: 0, rotateY: 0, borderRadius: '0rem', opacity: 1,
-      };
-    }
-
-    if (!sourceRect) {
-      return {
-        scaleX: 0.3, scaleY: 0.3, x: 0, y: 0,
-        rotate: 0, rotateY: 0, borderRadius: '0.5rem', opacity: 1,
-      };
-    }
-
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const isMobile = vw < 768;
-
-    let targetCx, targetCy, targetW, targetH;
-
-    if (isMobile) {
-      targetW = vw;
-      targetH = vh * 0.5;
-      targetCx = vw / 2;
-      targetCy = targetH / 2;
-    } else {
-      const modalW = Math.min(1152, vw - 64);
-      const photoW = modalW / 2;
-      const photoH = vh * 0.8;
-      targetCx = vw / 2 - modalW / 2 + photoW / 2;
-      targetCy = vh / 2;
-      targetW = photoW;
-      targetH = photoH;
-    }
-
-    const dx = sourceRect.cx - targetCx;
-    const dy = sourceRect.cy - targetCy;
-    const sx = sourceRect.thumbWidth / targetW;
-    const sy = sourceRect.thumbHeight / targetH;
-
-    return {
-      x: dx, y: dy, scaleX: sx, scaleY: sy,
-      rotate: sourceRect.totalRotation || 0, rotateY: 0,
-      borderRadius: '0.5rem', opacity: 1,
-    };
-  }, [sourceRect, prefersReducedMotion]);
+  const slideCustom = { direction, reduced: prefersReducedMotion };
+  const navParts = navigationInfo?.split(' / ').map(n => parseInt(n, 10));
 
   return (
-    <motion.div
+    <div
       ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label={photo.title}
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      className={`fixed inset-0 z-50 flex items-center justify-center ${isPresent ? '' : 'pointer-events-none'}`}
     >
-      {/* Backdrop */}
+      {/* Fond */}
       <motion.div
         className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm"
         onClick={onClose}
         style={{ opacity: backdropOpacity }}
       />
 
-      {/* Slideshow toggle */}
-      {onNext && (
-        <motion.button
-          className="absolute top-6 left-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
-          onClick={() => setIsPlaying(prev => !prev)}
-          whileTap={{ scale: 0.9 }}
-          aria-label={isPlaying ? 'Pause diaporama' : 'Lancer le diaporama'}
-        >
-          {isPlaying ? <Pause size={28} weight="light" /> : <Play size={28} weight="light" />}
-        </motion.button>
+      {/* Progression du diaporama */}
+      {isPlaying && (
+        <motion.div
+          key={photo.id}
+          className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-zinc-100/70 origin-left"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: SLIDESHOW_DELAY_MS / 1000, ease: 'linear' }}
+        />
       )}
 
-      {/* Close button */}
-      <motion.button
-        ref={closeButtonRef}
-        className="absolute top-6 right-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
-        onClick={onClose}
-        whileTap={{ scale: 0.9 }}
-        aria-label="Fermer"
-      >
-        <X size={28} weight="light" />
-      </motion.button>
+      <>
+        {onNext && (
+          <motion.button
+            className="absolute top-6 left-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+            style={{ opacity: chromeOpacity }}
+            onClick={() => setIsPlaying(prev => !prev)}
+            whileTap={{ scale: 0.9 }}
+            aria-label={isPlaying ? 'Pause diaporama' : 'Lancer le diaporama'}
+          >
+            {isPlaying ? <Pause size={28} weight="light" /> : <Play size={28} weight="light" />}
+          </motion.button>
+        )}
 
-      {/* Navigation arrows */}
-      {onPrev && (
         <motion.button
-          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
-          onClick={(e) => { e.stopPropagation(); pauseSlideshow(); onPrev(); }}
-          aria-label="Image précédente"
+          ref={closeButtonRef}
+          className="absolute top-6 right-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+          style={{ opacity: chromeOpacity }}
+          onClick={onClose}
           whileTap={{ scale: 0.9 }}
+          aria-label="Fermer"
         >
-          <CaretLeft size={36} weight="light" />
+          <X size={28} weight="light" />
         </motion.button>
-      )}
-      {onNext && (
-        <motion.button
-          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
-          onClick={(e) => { e.stopPropagation(); pauseSlideshow(); onNext(); }}
-          aria-label="Image suivante"
-          whileTap={{ scale: 0.9 }}
-        >
-          <CaretRight size={36} weight="light" />
-        </motion.button>
-      )}
 
-      {/* Screen reader announcement */}
+        {onPrev && (
+          <motion.button
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+            style={{ opacity: chromeOpacity }}
+            onClick={(e) => { e.stopPropagation(); handleSwipe(-1); }}
+            aria-label="Image précédente"
+            whileTap={{ scale: 0.9 }}
+          >
+            <CaretLeft size={36} weight="light" />
+          </motion.button>
+        )}
+        {onNext && (
+          <motion.button
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+            style={{ opacity: chromeOpacity }}
+            onClick={(e) => { e.stopPropagation(); handleSwipe(1); }}
+            aria-label="Image suivante"
+            whileTap={{ scale: 0.9 }}
+          >
+            <CaretRight size={36} weight="light" />
+          </motion.button>
+        )}
+      </>
+
       <div aria-live="polite" className="sr-only">
-        {photo.title} — {navigationInfo}
+        {photo.title}{navigationInfo ? ` — ${navigationInfo}` : ''}
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col md:flex-row w-full h-full md:h-auto md:max-h-[90vh] md:max-w-6xl md:mx-8 overflow-y-auto md:overflow-hidden">
-        {/* Photo with FLIP animation (parent) */}
+      <div className="relative z-10 flex flex-col md:flex-row w-full h-full md:h-auto md:max-h-[90vh] md:max-w-6xl md:mx-8 overflow-y-auto md:overflow-visible pointer-events-none">
+        {/* Scène : zone allouée à la photo, sert de référence (container query) à sa taille */}
         <div
-          ref={photoContainerRef}
-          className="relative w-full md:w-1/2 min-h-[50vh] md:min-h-[80vh] flex-shrink-0"
+          ref={stageRef}
+          className="relative w-full md:w-1/2 h-[60dvh] md:h-[80vh] flex-shrink-0 mt-16 md:mt-0 [container-type:size] pointer-events-auto"
         >
           <motion.div
-            className="w-full h-full relative"
-            style={!fullImageLoaded && photo.blurDataURL ? {
-              backgroundImage: `url(${photo.blurDataURL})`,
-              backgroundSize: 'contain',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            } : undefined}
-            initial={flipInitial}
-            animate={{
-              x: 0, y: 0, scaleX: 1, scaleY: 1, rotate: 0,
-              borderRadius: '0rem', opacity: 1,
-            }}
-            exit={isDismissing
-              ? { opacity: 0, y: 200, scale: 0.85 }
-              : { opacity: 0, scale: 0.9 }}
-            transition={{
-              type: 'spring', stiffness: 70, damping: 20,
-              opacity: { duration: 0.2 },
-            }}
+            className="absolute inset-0"
+            style={{ x: flipX, y: flipY, scale: flipScale, rotate: flipRotate, opacity: flipOpacity }}
           >
-            {/* Dismiss wrapper for swipe-to-close */}
-            <motion.div
-              drag={isZoomed ? false : 'y'}
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={0.4}
-              style={{ y: dismissY, scale: dismissScale }}
-              onDragEnd={handleDismissDragEnd}
-              className="w-full h-full touch-none"
-            >
-              {/* Inner wrapper for zoom/pan/swipe */}
-              <motion.div
-                ref={imageWrapperRef}
-                className="w-full h-full relative touch-none"
-                style={{ scale, x: isZoomed ? panX : 0, y: isZoomed ? panY : 0 }}
-                drag={isZoomed ? true : 'x'}
-                dragConstraints={isZoomed ? { left: -200, right: 200, top: -200, bottom: 200 } : { left: 0, right: 0 }}
-                dragElastic={isZoomed ? 0.1 : 0.2}
-                onDragEnd={handleDragEnd}
+            <AnimatePresence initial={false} custom={slideCustom}>
+              <Slide
+                key={photo.id}
+                photo={photo}
+                custom={slideCustom}
+                isInitial={!hasNavigated}
+                placeholderSrc={hasNavigated ? null : placeholderSrc}
+                setBoxRef={setBoxRef}
+                radius={radius}
+                dragY={dragY}
+                zoom={zoom}
+                isZoomed={isZoomed}
+                onSwipe={handleSwipe}
+                onDismiss={onClose}
                 onDoubleClick={handleDoubleClick}
-              >
-                {/* Gallery thumbnail as immediate placeholder (exact cached URL) */}
-                {!fullImageLoaded && sourceRect?.thumbSrc && (
-                  <img
-                    src={sourceRect.thumbSrc}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
-                    aria-hidden="true"
-                  />
-                )}
-                <Image
-                  src={photo.path}
-                  alt={photo.alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-contain"
-                  priority
-                  draggable={false}
-                  onLoad={() => setFullImageLoaded(true)}
-                />
-              </motion.div>
-            </motion.div>
+              />
+            </AnimatePresence>
           </motion.div>
         </div>
 
-        {/* Details panel */}
+        {/* Panneau d'informations */}
         <motion.div
-          className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center text-white"
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 50 }}
-          transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.25 }}
+          className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center text-white pointer-events-auto"
+          style={{ opacity: chromeOpacity }}
         >
-          <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-3xl font-light tracking-tight">{photo.title}</h2>
-            {onToggleFavorite && (
-              <FavoriteButton
-                isFavorite={isFavorite}
-                onToggle={() => onToggleFavorite(photo.id)}
-                size={24}
-              />
-            )}
-          </div>
-          <p className="text-zinc-400 font-light leading-relaxed mb-8">{photo.description}</p>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={photo.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={fade.fast}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-3xl font-light tracking-tight">{photo.title}</h2>
+                {onToggleFavorite && (
+                  <FavoriteButton
+                    isFavorite={isFavorite}
+                    onToggle={() => onToggleFavorite(photo.id)}
+                    size={24}
+                  />
+                )}
+              </div>
+              <p className="text-zinc-400 font-light leading-relaxed mb-8">{photo.description}</p>
 
-          {photo.technical && (
-            <div className="mb-8 space-y-2">
-              <h3 className="text-sm uppercase tracking-widest text-zinc-400 mb-3">Détails techniques</h3>
-              <p className="text-sm text-zinc-400">
-                <span className="text-zinc-300">Appareil</span> — {photo.technical.camera}
-              </p>
-              <p className="text-sm text-zinc-400">
-                <span className="text-zinc-300">Objectif</span> — {photo.technical.lens}
-              </p>
-              <p className="text-sm text-zinc-400">
-                <span className="text-zinc-300">ISO</span> — {photo.technical.iso}
-              </p>
+              {photo.technical && (
+                <div className="mb-8 space-y-2">
+                  <h3 className="text-sm uppercase tracking-widest text-zinc-400 mb-3">Détails techniques</h3>
+                  <p className="text-sm text-zinc-400">
+                    <span className="text-zinc-300">Appareil</span> — {photo.technical.camera}
+                  </p>
+                  <p className="text-sm text-zinc-400">
+                    <span className="text-zinc-300">Objectif</span> — {photo.technical.lens}
+                  </p>
+                  <p className="text-sm text-zinc-400">
+                    <span className="text-zinc-300">ISO</span> — {photo.technical.iso}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {navParts && (
+            <div className="mb-6">
+              <p className="text-zinc-400 text-sm font-light tracking-widest mb-2">{navigationInfo}</p>
+              <div className="w-full max-w-[200px] h-px bg-zinc-800 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-zinc-500"
+                  initial={false}
+                  animate={{ width: `${(navParts[0] / navParts[1]) * 100}%` }}
+                  transition={spring.snappy}
+                />
+              </div>
             </div>
           )}
 
-          {navigationInfo && (() => {
-            const parts = navigationInfo.split(' / ');
-            const current = parseInt(parts[0], 10);
-            const total = parseInt(parts[1], 10);
-            return (
-              <div className="mb-6">
-                <p className="text-zinc-400 text-sm font-light tracking-widest mb-2">{navigationInfo}</p>
-                <div className="w-full max-w-[200px] h-px bg-zinc-800 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-zinc-500"
-                    initial={false}
-                    animate={{ width: `${(current / total) * 100}%` }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  />
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Share button */}
           <button
             onClick={handleShare}
             className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm mb-4 self-start"
@@ -543,7 +647,7 @@ const PhotoDetail = ({ photo, sourceRect, onClose, onNext, onPrev, prevPhoto, ne
           )}
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

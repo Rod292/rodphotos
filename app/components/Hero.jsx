@@ -55,7 +55,6 @@ const Hero = () => {
 
   const [hasInitiallyAnimated, setHasInitiallyAnimated] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const [sourceRect, setSourceRect] = useState(null);
 
   // Auto-rotation via requestAnimationFrame (disabled when prefers-reduced-motion)
   useEffect(() => {
@@ -168,27 +167,32 @@ const Hero = () => {
     });
   }, [windowSize, isMobile]);
 
+  const cardWidth = Math.min(250, windowSize.width * (isMobile ? 0.55 : 0.2));
+  const cardHeight = Math.min(isMobile ? 340 : 350, windowSize.width * (isMobile ? 0.75 : 0.25));
+
+  // Position et inclinaison actuelles de la carte : point de départ / d'arrivée de la visionneuse
+  const getThumbnailRect = useCallback((photoId) => {
+    const index = photos.findIndex(p => p.id === photoId);
+    const el = thumbnailRefs.current[index];
+    if (!el) return null;
+    const domRect = el.getBoundingClientRect();
+    return {
+      cx: domRect.x + domRect.width / 2,
+      cy: domRect.y + domRect.height / 2,
+      width: cardWidth,
+      height: cardHeight,
+      rotation: normalizeAngle(smoothAngle.get() + (positions[index]?.rotation || 0)),
+      src: el.querySelector('img')?.currentSrc || null,
+    };
+  }, [smoothAngle, positions, cardWidth, cardHeight]);
+
   const handlePhotoClick = useCallback((index) => {
     if (didPan.current) return;
-    const el = thumbnailRefs.current[index];
-    if (el) {
-      const domRect = el.getBoundingClientRect();
-      const currentAngle = smoothAngle.get();
-      const itemRotation = positions[index]?.rotation || 0;
-      setSourceRect({
-        cx: domRect.x + domRect.width / 2,
-        cy: domRect.y + domRect.height / 2,
-        thumbWidth: Math.min(isMobile ? 250 : 250, windowSize.width * (isMobile ? 0.55 : 0.2)),
-        thumbHeight: Math.min(isMobile ? 340 : 350, windowSize.width * (isMobile ? 0.75 : 0.25)),
-        totalRotation: normalizeAngle(currentAngle + itemRotation),
-      });
-    }
     setSelectedPhoto(photos[index]);
-  }, [smoothAngle, positions, isMobile, windowSize]);
+  }, []);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedPhoto(null);
-    setSourceRect(null);
     isInteracting.current = true;
     clearTimeout(resumeTimeout.current);
     resumeTimeout.current = setTimeout(() => {
@@ -223,7 +227,7 @@ const Hero = () => {
               key={image}
               ref={(el) => { thumbnailRefs.current[index] = el; }}
               aria-label={`Voir « ${photos[index].title} »`}
-              className="absolute cursor-pointer p-0 rounded-lg"
+              className="group absolute cursor-pointer p-0 rounded-lg"
               initial={{ opacity: 0 }}
               animate={{ opacity: selectedPhoto?.id === photos[index].id ? 0 : 1 }}
               transition={{
@@ -231,8 +235,8 @@ const Hero = () => {
                 delay: prefersReducedMotion ? 0 : (hasInitiallyAnimated ? 0 : index * 0.05),
               }}
               style={{
-                width: `${Math.min(isMobile ? 250 : 250, windowSize.width * (isMobile ? 0.55 : 0.2))}px`,
-                height: `${Math.min(isMobile ? 340 : 350, windowSize.width * (isMobile ? 0.75 : 0.25))}px`,
+                width: `${cardWidth}px`,
+                height: `${cardHeight}px`,
                 left: positions[index]?.x || 0,
                 top: positions[index]?.y || 0,
                 transform: `translate(-50%, -50%) rotate(${positions[index]?.rotation || 0}deg)`,
@@ -240,7 +244,7 @@ const Hero = () => {
               }}
               onClick={() => handlePhotoClick(index)}
             >
-              <div className="w-full h-full relative rounded-lg shadow-lg shadow-black/40 overflow-hidden">
+              <div className="w-full h-full relative rounded-lg shadow-lg shadow-black/40 overflow-hidden transition-[translate,scale,box-shadow] duration-300 ease-out group-hover:-translate-y-3 group-hover:scale-[1.03] group-hover:shadow-2xl group-hover:shadow-black/60 group-focus-visible:-translate-y-3">
                 <Image
                   src={image}
                   alt={photos[index].alt}
@@ -291,7 +295,7 @@ const Hero = () => {
 
       <AnimatePresence>
         {selectedPhoto && (
-          <PhotoDetail photo={selectedPhoto} sourceRect={sourceRect} onClose={handleCloseDetail} />
+          <PhotoDetail photo={selectedPhoto} getThumbnailRect={getThumbnailRect} onClose={handleCloseDetail} />
         )}
       </AnimatePresence>
     </motion.section>
