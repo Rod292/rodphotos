@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function NotFound() {
   return (
-    <section className="min-h-[100dvh] w-full flex items-center justify-center bg-zinc-950 text-zinc-100 relative overflow-hidden">
+    <section className="min-h-[100dvh] w-full flex items-center justify-center bg-white text-zinc-900 relative overflow-hidden">
       {/* Background photo with overlay */}
       <div className="absolute inset-0">
         <Image
@@ -20,13 +20,13 @@ export default function NotFound() {
       </div>
 
       <div className="relative z-10 text-center px-6 max-w-lg">
-        <p className="text-8xl md:text-9xl font-light tracking-tighter mb-4 text-zinc-300">
+        <p className="text-8xl md:text-9xl font-light tracking-tighter mb-4 text-zinc-700">
           404
         </p>
         <h1 className="text-xl md:text-2xl font-light tracking-tight mb-3">
           Page introuvable
         </h1>
-        <p className="text-zinc-400 font-light mb-10 leading-relaxed">
+        <p className="text-zinc-600 font-light mb-10 leading-relaxed">
           Cette page n&apos;existe pas ou a été déplacée.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -110,7 +110,7 @@ const Contact = () => {
 
   return (
     <section
-      className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950 text-zinc-100">
+      className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-white text-zinc-900">
       <div className="max-w-[1400px] mx-auto">
         <h1
           className="text-4xl md:text-6xl tracking-tighter leading-none mb-8 md:mb-12 font-light">
@@ -121,20 +121,20 @@ const Contact = () => {
           {/* Left column: contact info + photo if selected */}
           <motion.div>
             <h2 className="text-xl font-light mb-6 tracking-tight">Échangeons</h2>
-            <p className="text-base text-zinc-400 mb-8 leading-relaxed max-w-[65ch]">
+            <p className="text-base text-zinc-600 mb-8 leading-relaxed max-w-[65ch]">
               {"Pour l'achat d'un tirage, une demande de collaboration, un shooting ou simplement pour échanger sur la photographie, n'hésitez pas à me contacter."}
             </p>
 
             <div className="space-y-4 mb-10">
               <div className="flex items-center gap-3">
                 <Envelope size={20} weight="light" className="text-zinc-500" />
-                <a href="mailto:contact@photosrod.com" className="text-zinc-400 hover:text-zinc-100 transition-colors">
+                <a href="mailto:contact@photosrod.com" className="text-zinc-600 hover:text-zinc-900 transition-colors">
                   contact@photosrod.com
                 </a>
               </div>
               <div className="flex items-center gap-3">
                 <MapPin size={20} weight="light" className="text-zinc-500" />
-                <span className="text-zinc-400">Bretagne, France</span>
+                <span className="text-zinc-600">Bretagne, France</span>
               </div>
             </div>
 
@@ -144,7 +144,7 @@ const Contact = () => {
                 href="https://instagram.com/pcklerod"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-zinc-500 hover:text-zinc-100 transition-colors"
+                className="text-zinc-500 hover:text-zinc-900 transition-colors"
                 aria-label="Instagram"
               >
                 <InstagramLogo size={24} weight="light" />
@@ -154,7 +154,7 @@ const Contact = () => {
             {/* Photo preview — left column on desktop */}
             {selectedPhoto && (
               <motion.div
-                className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-4 overflow-hidden"
+                className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 overflow-hidden"
               >
                 <div className="rounded-lg overflow-hidden mb-4">
                   <Image
@@ -166,7 +166,7 @@ const Contact = () => {
                     className="w-full h-auto max-h-[280px] object-contain"
                   />
                 </div>
-                <p className="text-sm text-zinc-300 font-light">{selectedPhoto.title}</p>
+                <p className="text-sm text-zinc-700 font-light">{selectedPhoto.title}</p>
                 <p className="text-xs text-zinc-500 mt-1">Réf: {selectedPhoto.id}</p>
               </motion.div>
             )}
@@ -176,19 +176,19 @@ const Contact = () => {
           <motion.div>
             {formStatus.submitted && formStatus.success ? (
               <motion.div
-                className="rounded-xl p-8 text-center border border-emerald-900/30 bg-emerald-950/20 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                className="rounded-xl p-8 text-center border border-emerald-200 bg-emerald-50"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={spring.smooth}
               >
-                <CheckCircle size={48} weight="light" className="mx-auto text-emerald-400 mb-4" />
-                <h3 className="text-xl font-light text-emerald-300 mb-2">Message envoyé</h3>
-                <p className="text-emerald-400/80 text-sm">{formStatus.message}</p>
+                <CheckCircle size={48} weight="light" className="mx-auto text-emerald-600 mb-4" />
+                <h3 className="text-xl font-light text-emerald-800 mb-2">Message envoyé</h3>
+                <p className="text-emerald-700 text-sm">{formStatus.message}</p>
               </motion.div>
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="space-y-5 rounded-xl p-6 md:p-8 border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                className="space-y-5 rounded-xl p-6 md:p-8 border border-zinc-200 bg-zinc-50"
                 noValidate
               >
                 {/* Honeypot anti-spam : champ invisible que seuls les bots remplissent */}
@@ -206,7 +206,7 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="name" className="block text-sm text-zinc-400 mb-2">
+                  <label htmlFor="name" className="block text-sm text-zinc-600 mb-2">
                     Nom
                   </label>
                   <input
@@ -216,19 +216,19 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 transition-all ${
-                      errors.name ? 'border-red-500/60' : 'border-zinc-800 focus:border-zinc-600'
+                    className={`w-full px-4 py-3 bg-white border rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-zinc-300/60 transition-all ${
+                      errors.name ? 'border-red-500/70' : 'border-zinc-200 focus:border-zinc-400'
                     }`}
                     aria-invalid={errors.name ? 'true' : 'false'}
                     aria-describedby={errors.name ? 'name-error' : undefined}
                   />
                   {errors.name && (
-                    <p id="name-error" className="mt-1.5 text-sm text-red-400/80" role="alert">{errors.name}</p>
+                    <p id="name-error" className="mt-1.5 text-sm text-red-600" role="alert">{errors.name}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm text-zinc-400 mb-2">
+                  <label htmlFor="email" className="block text-sm text-zinc-600 mb-2">
                     Email
                   </label>
                   <input
@@ -238,20 +238,20 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 transition-all ${
-                      errors.email ? 'border-red-500/60' : 'border-zinc-800 focus:border-zinc-600'
+                    className={`w-full px-4 py-3 bg-white border rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-zinc-300/60 transition-all ${
+                      errors.email ? 'border-red-500/70' : 'border-zinc-200 focus:border-zinc-400'
                     }`}
                     aria-invalid={errors.email ? 'true' : 'false'}
                     aria-describedby={errors.email ? 'email-error' : undefined}
                   />
                   {errors.email && (
-                    <p id="email-error" className="mt-1.5 text-sm text-red-400/80" role="alert">{errors.email}</p>
+                    <p id="email-error" className="mt-1.5 text-sm text-red-600" role="alert">{errors.email}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-sm text-zinc-400 mb-2">
-                    Téléphone <span className="text-zinc-400 font-light">(optionnel)</span>
+                  <label htmlFor="phone" className="block text-sm text-zinc-600 mb-2">
+                    Téléphone <span className="text-zinc-500 font-light">(optionnel)</span>
                   </label>
                   <input
                     type="tel"
@@ -259,22 +259,22 @@ const Contact = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 focus:border-zinc-600 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-zinc-300/60 focus:border-zinc-400 transition-all"
                   />
                 </div>
 
                 <fieldset>
-                  <legend className="block text-sm text-zinc-400 mb-2">
-                    Objet <span className="text-zinc-400 font-light">(optionnel)</span>
+                  <legend className="block text-sm text-zinc-600 mb-2">
+                    Objet <span className="text-zinc-500 font-light">(optionnel)</span>
                   </legend>
                   <div className="flex flex-wrap gap-2">
                     {SUBJECTS.map(subject => (
                       <label
                         key={subject}
-                        className={`cursor-pointer px-4 py-2 rounded-full text-sm border transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-zinc-400 ${
+                        className={`cursor-pointer px-4 py-2 rounded-full text-sm border transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-zinc-600 ${
                           formData.subject === subject
-                            ? 'bg-zinc-100 text-zinc-950 border-zinc-100'
-                            : 'border-zinc-800 text-zinc-300 hover:border-zinc-600'
+                            ? 'bg-zinc-900 text-white border-zinc-900'
+                            : 'border-zinc-200 text-zinc-700 hover:border-zinc-400'
                         }`}
                       >
                         <input
@@ -292,7 +292,7 @@ const Contact = () => {
                 </fieldset>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm text-zinc-400 mb-2">
+                  <label htmlFor="message" className="block text-sm text-zinc-600 mb-2">
                     Message
                   </label>
                   <textarea
@@ -302,25 +302,25 @@ const Contact = () => {
                     value={formData.message}
                     onChange={handleChange}
                     required
-                    className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg text-zinc-100 placeholder-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-zinc-700/50 transition-all resize-none ${
-                      errors.message ? 'border-red-500/60' : 'border-zinc-800 focus:border-zinc-600'
+                    className={`w-full px-4 py-3 bg-white border rounded-lg text-zinc-900 placeholder-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-zinc-300/60 transition-all resize-none ${
+                      errors.message ? 'border-red-500/70' : 'border-zinc-200 focus:border-zinc-400'
                     }`}
                     aria-invalid={errors.message ? 'true' : 'false'}
                     aria-describedby={errors.message ? 'message-error' : undefined}
                   />
                   {errors.message && (
-                    <p id="message-error" className="mt-1.5 text-sm text-red-400/80" role="alert">{errors.message}</p>
+                    <p id="message-error" className="mt-1.5 text-sm text-red-600" role="alert">{errors.message}</p>
                   )}
                 </div>
 
                 {formStatus.error && (
-                  <p className="text-sm text-red-400/80" role="alert">{formStatus.message}</p>
+                  <p className="text-sm text-red-600" role="alert">{formStatus.message}</p>
                 )}
 
                 <motion.button
                   type="submit"
                   disabled={submitting}
-                  className="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="btn-solid w-full disabled:opacity-40 disabled:cursor-not-allowed"
                   whileTap={submitting ? {} : { scale: 0.97 }}
                   transition={spring.smooth}
                 >

@@ -192,7 +192,7 @@ const Gallery = ({ initialFilter = 'all' }) => {
   const currentCategoryLabel = allCategories.find(c => c.id === filter)?.label || 'Toutes';
 
   return (
-    <section className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950 text-zinc-100">
+    <section className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-white text-zinc-900">
       <div className="max-w-[1400px] mx-auto">
         <h1 className="text-4xl md:text-6xl tracking-tighter leading-none mb-8 md:mb-12 font-light">
           {heading}
@@ -210,15 +210,15 @@ const Gallery = ({ initialFilter = 'all' }) => {
               aria-pressed={filter === category.id}
               className={`relative px-5 py-2 rounded-full text-sm tracking-wide transition-colors ${
                 filter === category.id
-                  ? 'text-zinc-950'
-                  : 'text-zinc-300 hover:text-white'
+                  ? 'text-white'
+                  : 'text-zinc-700 hover:text-zinc-900'
               }`}
               whileTap={{ scale: 0.97 }}
               transition={spring.snappy}
             >
               {filter === category.id && (
                 <motion.span
-                  className="absolute inset-0 bg-zinc-100 rounded-full"
+                  className="absolute inset-0 bg-zinc-900 rounded-full"
                   layoutId="filter-pill"
                   transition={spring.snappy}
                 />
@@ -226,13 +226,13 @@ const Gallery = ({ initialFilter = 'all' }) => {
               <span className="relative z-10">
                 {category.id === 'favorites' ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <Heart size={14} weight="fill" className="text-red-400" />
+                    <Heart size={14} weight="fill" className="text-red-500" />
                     {category.label} ({favorites.length})
                   </span>
                 ) : (
                   <>
                     {category.label}
-                    <span className={`ml-1.5 ${filter === category.id ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                    <span className={`ml-1.5 ${filter === category.id ? 'text-zinc-400' : 'text-zinc-600'}`}>
                       {category.id === 'all' ? photos.length : photos.filter(p => p.category === category.id).length}
                     </span>
                   </>
@@ -277,8 +277,8 @@ const Gallery = ({ initialFilter = 'all' }) => {
                     onClick={() => setSelectedIndex(index)}
                   >
                     {imageErrors[image.id] ? (
-                      <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
-                        <div className="text-center text-zinc-400">
+                      <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
+                        <div className="text-center text-zinc-600">
                           <svg className="mx-auto mb-2" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="3" y="3" width="18" height="18" rx="2" />
                             <circle cx="8.5" cy="8.5" r="1.5" />
@@ -326,7 +326,7 @@ const Gallery = ({ initialFilter = 'all' }) => {
 
         {filteredImages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24">
-            <p className="text-zinc-400 text-lg font-light">
+            <p className="text-zinc-600 text-lg font-light">
               {filter === 'favorites' ? 'Aucun favori pour le moment.' : 'Aucune image dans cette catégorie.'}
             </p>
           </div>

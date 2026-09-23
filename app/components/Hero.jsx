@@ -207,7 +207,7 @@ const Hero = () => {
 
   return (
     <motion.section
-      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-zinc-950 touch-none cursor-grab active:cursor-grabbing"
+      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-white touch-none cursor-grab active:cursor-grabbing"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -250,7 +250,7 @@ const Hero = () => {
               }}
               onClick={() => handlePhotoClick(index)}
             >
-              <div className="w-full h-full relative rounded-lg shadow-lg shadow-black/40 overflow-hidden transition-[translate,scale,box-shadow] duration-300 ease-out group-hover:-translate-y-3 group-hover:scale-[1.03] group-hover:shadow-2xl group-hover:shadow-black/60 group-focus-visible:-translate-y-3">
+              <div className="w-full h-full relative rounded-lg shadow-lg shadow-black/15 overflow-hidden transition-[translate,scale,box-shadow] duration-300 ease-out group-hover:-translate-y-3 group-hover:scale-[1.03] group-hover:shadow-2xl group-hover:shadow-black/25 group-focus-visible:-translate-y-3">
                 <Image
                   src={image}
                   alt={photos[index].alt}
@@ -268,12 +268,12 @@ const Hero = () => {
         </motion.div>
 
         {/* Dégradé pour la lisibilité de l'accroche (rendue par HeroLoader) */}
-        <div className="absolute bottom-0 left-0 right-0 h-72 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-30 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-72 bg-gradient-to-t from-white via-white/80 to-transparent z-30 pointer-events-none" />
 
         {/* Swipe hint — mobile only */}
         {isMobile && (
           <motion.div
-            className="absolute z-40 flex items-center gap-3 text-zinc-400"
+            className="absolute z-40 flex items-center gap-3 text-zinc-600"
             style={{ bottom: 'calc(5% + 190px)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 1, 0] }}

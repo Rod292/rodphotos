@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --foreground: 244 244 245;
-  --background: 9 9 11;
+  --foreground: 24 24 27;
+  --background: 255 255 255;
 }
 
 body {
@@ -20,15 +20,15 @@ html, body {
 
 /* Focus visible for keyboard navigation */
 :focus-visible {
-  outline: 2px solid rgba(244, 244, 245, 0.5);
+  outline: 2px solid rgba(24, 24, 27, 0.6);
   outline-offset: 2px;
 }
 
 /* Button styles */
 .btn-primary {
   background-color: transparent;
-  color: rgb(244, 244, 245);
-  border: 1px solid rgba(244, 244, 245, 0.2);
+  color: rgb(24, 24, 27);
+  border: 1px solid rgba(24, 24, 27, 0.2);
   padding: 0.75rem 1.5rem;
   border-radius: 9999px;
   font-weight: 400;
@@ -37,20 +37,20 @@ html, body {
 }
 
 .btn-primary:hover {
-  background-color: rgb(244, 244, 245);
-  color: rgb(9, 9, 11);
-  border-color: rgb(244, 244, 245);
+  background-color: rgb(24, 24, 27);
+  color: rgb(255, 255, 255);
+  border-color: rgb(24, 24, 27);
 }
 
 .btn-primary:active {
   transform: scale(0.98) translateY(1px);
 }
 
-.btn-light {
+.btn-solid {
   display: inline-block;
-  background-color: rgb(244, 244, 245);
-  color: rgb(9, 9, 11);
-  border: 1px solid rgb(244, 244, 245);
+  background-color: rgb(24, 24, 27);
+  color: rgb(255, 255, 255);
+  border: 1px solid rgb(24, 24, 27);
   padding: 0.75rem 1.5rem;
   border-radius: 9999px;
   font-weight: 400;
@@ -58,11 +58,11 @@ html, body {
   transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-light:hover {
-  background-color: rgb(212, 212, 216);
+.btn-solid:hover {
+  background-color: rgb(63, 63, 70);
 }
 
-.btn-light:active {
+.btn-solid:active {
   transform: scale(0.98) translateY(1px);
 }
 
@@ -83,8 +83,8 @@ html, body {
   top: 0;
   z-index: 9999;
   padding: 0.75rem 1.5rem;
-  background: rgb(244, 244, 245);
-  color: rgb(9, 9, 11);
+  background: rgb(24, 24, 27);
+  color: rgb(255, 255, 255);
   font-weight: 500;
   text-decoration: none;
   border-radius: 0 0 0.5rem 0;
@@ -96,7 +96,7 @@ html, body {
 
 /* Skeleton loading */
 .skeleton {
-  background: linear-gradient(90deg, rgba(244,244,245,0.06) 25%, rgba(244,244,245,0.12) 50%, rgba(244,244,245,0.06) 75%);
+  background: linear-gradient(90deg, rgba(24,24,27,0.04) 25%, rgba(24,24,27,0.08) 50%, rgba(24,24,27,0.04) 75%);
   background-size: 200% 100%;
   animation: skeleton-pulse 1.5s ease-in-out infinite;
   border-radius: 0.5rem;
@@ -140,15 +140,15 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(244, 244, 245, 0.1);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(244, 244, 245, 0.15);
+  border: 1px solid rgba(24, 24, 27, 0.12);
   border-radius: 9999px;
-  color: rgb(244, 244, 245);
+  color: rgb(24, 24, 27);
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .back-to-top:hover {
-  background: rgba(244, 244, 245, 0.2);
+  background: rgba(244, 244, 245, 1);
 }

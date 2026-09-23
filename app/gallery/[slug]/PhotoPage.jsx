@@ -8,7 +8,7 @@ import { CaretLeft, CaretRight, ArrowLeft } from '@phosphor-icons/react';
 const PhotoPage = ({ photo, prev, next }) => {
   return (
     <section
-      className="min-h-[100dvh] w-full bg-zinc-950 text-zinc-100 pt-20">
+      className="min-h-[100dvh] w-full bg-white text-zinc-900 pt-20">
       <div className="max-w-7xl mx-auto px-4 md:px-10">
         {/* Back button */}
         <motion.div
@@ -16,7 +16,7 @@ const PhotoPage = ({ photo, prev, next }) => {
         >
           <Link
             href="/gallery"
-            className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm tracking-wide"
+            className="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-900 transition-colors text-sm tracking-wide"
           >
             <ArrowLeft size={18} weight="light" />
             Retour à la galerie
@@ -45,26 +45,26 @@ const PhotoPage = ({ photo, prev, next }) => {
             className="lg:w-1/3 flex flex-col justify-center pb-12 lg:pb-0"
           >
             <h1 className="text-3xl md:text-4xl font-light tracking-tight mb-4">{photo.title}</h1>
-            <p className="text-zinc-400 font-light leading-relaxed mb-8">{photo.description}</p>
+            <p className="text-zinc-600 font-light leading-relaxed mb-8">{photo.description}</p>
 
             {photo.technical && (
               <div className="mb-8 space-y-2">
-                <h2 className="text-sm uppercase tracking-widest text-zinc-400 mb-3">Détails techniques</h2>
-                <p className="text-sm text-zinc-400">
-                  <span className="text-zinc-300">Appareil</span> — {photo.technical.camera}
+                <h2 className="text-sm uppercase tracking-widest text-zinc-600 mb-3">Détails techniques</h2>
+                <p className="text-sm text-zinc-600">
+                  <span className="text-zinc-700">Appareil</span> — {photo.technical.camera}
                 </p>
-                <p className="text-sm text-zinc-400">
-                  <span className="text-zinc-300">Objectif</span> — {photo.technical.lens}
+                <p className="text-sm text-zinc-600">
+                  <span className="text-zinc-700">Objectif</span> — {photo.technical.lens}
                 </p>
-                <p className="text-sm text-zinc-400">
-                  <span className="text-zinc-300">ISO</span> — {photo.technical.iso}
+                <p className="text-sm text-zinc-600">
+                  <span className="text-zinc-700">ISO</span> — {photo.technical.iso}
                 </p>
               </div>
             )}
 
             {photo.purchasePrice && (
-              <p className="text-sm text-zinc-400 mb-3">
-                Tirages à partir de <span className="text-zinc-100">{photo.purchasePrice} €</span>
+              <p className="text-sm text-zinc-600 mb-3">
+                Tirages à partir de <span className="text-zinc-900">{photo.purchasePrice} €</span>
               </p>
             )}
 
@@ -87,11 +87,11 @@ const PhotoPage = ({ photo, prev, next }) => {
             )}
 
             {/* Prev/Next navigation */}
-            <div className="flex items-center gap-4 pt-6 border-t border-zinc-800/50">
+            <div className="flex items-center gap-4 pt-6 border-t border-zinc-200">
               {prev ? (
                 <Link
                   href={`/gallery/${prev.id}`}
-                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm"
+                  className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900 transition-colors text-sm"
                 >
                   <CaretLeft size={18} weight="light" />
                   {prev.title}
@@ -103,7 +103,7 @@ const PhotoPage = ({ photo, prev, next }) => {
               {next && (
                 <Link
                   href={`/gallery/${next.id}`}
-                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm"
+                  className="flex items-center gap-2 text-zinc-600 hover:text-zinc-900 transition-colors text-sm"
                 >
                   {next.title}
                   <CaretRight size={18} weight="light" />

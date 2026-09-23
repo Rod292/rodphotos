@@ -16,7 +16,7 @@ const FavoriteButton = ({ isFavorite, onToggle, size = 22, overlay = false, clas
       className={`inline-flex items-center justify-center transition-colors ${
         overlay
           ? 'w-11 h-11 rounded-full bg-zinc-950/40 backdrop-blur-sm text-zinc-100 hover:text-red-400'
-          : 'text-zinc-400 hover:text-red-400'
+          : 'text-zinc-600 hover:text-red-500'
       } ${className}`}
       aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
       whileTap={{ scale: 0.85 }}
@@ -24,7 +24,7 @@ const FavoriteButton = ({ isFavorite, onToggle, size = 22, overlay = false, clas
       <Heart
         size={size}
         weight={isFavorite ? 'fill' : 'light'}
-        className={isFavorite ? 'text-red-400' : ''}
+        className={isFavorite ? 'text-red-500' : ''}
       />
     </motion.button>
   );

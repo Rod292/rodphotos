@@ -451,7 +451,7 @@ const PhotoDetail = ({
     >
       {/* Fond */}
       <motion.div
-        className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm"
+        className="absolute inset-0 bg-white/95 backdrop-blur-sm"
         onClick={onClose}
         style={{ opacity: backdropOpacity }}
       />
@@ -460,7 +460,7 @@ const PhotoDetail = ({
       {isPlaying && (
         <motion.div
           key={photo.id}
-          className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-zinc-100/70 origin-left"
+          className="absolute top-0 left-0 right-0 z-30 h-0.5 bg-zinc-900/70 origin-left"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: SLIDESHOW_DELAY_MS / 1000, ease: 'linear' }}
@@ -470,7 +470,7 @@ const PhotoDetail = ({
       <>
         {onNext && (
           <motion.button
-            className="absolute top-6 left-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+            className="absolute top-6 left-6 z-20 text-zinc-600 hover:text-zinc-900 p-2 transition-colors"
             style={{ opacity: chromeOpacity }}
             onClick={() => setIsPlaying(prev => !prev)}
             whileTap={{ scale: 0.9 }}
@@ -482,7 +482,7 @@ const PhotoDetail = ({
 
         <motion.button
           ref={closeButtonRef}
-          className="absolute top-6 right-6 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+          className="absolute top-6 right-6 z-20 text-zinc-600 hover:text-zinc-900 p-2 transition-colors"
           style={{ opacity: chromeOpacity }}
           onClick={onClose}
           whileTap={{ scale: 0.9 }}
@@ -493,7 +493,7 @@ const PhotoDetail = ({
 
         {onPrev && (
           <motion.button
-            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 text-zinc-600 hover:text-zinc-900 p-2 transition-colors"
             style={{ opacity: chromeOpacity }}
             onClick={(e) => { e.stopPropagation(); handleSwipe(-1); }}
             aria-label="Image précédente"
@@ -504,7 +504,7 @@ const PhotoDetail = ({
         )}
         {onNext && (
           <motion.button
-            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-zinc-400 hover:text-white p-2 transition-colors"
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 text-zinc-600 hover:text-zinc-900 p-2 transition-colors"
             style={{ opacity: chromeOpacity }}
             onClick={(e) => { e.stopPropagation(); handleSwipe(1); }}
             aria-label="Image suivante"
@@ -551,7 +551,7 @@ const PhotoDetail = ({
 
         {/* Panneau d'informations */}
         <motion.div
-          className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center text-white pointer-events-auto"
+          className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center text-zinc-900 pointer-events-auto"
           style={{ opacity: chromeOpacity }}
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -572,19 +572,19 @@ const PhotoDetail = ({
                   />
                 )}
               </div>
-              <p className="text-zinc-400 font-light leading-relaxed mb-8">{photo.description}</p>
+              <p className="text-zinc-600 font-light leading-relaxed mb-8">{photo.description}</p>
 
               {photo.technical && (
                 <div className="mb-8 space-y-2">
-                  <h3 className="text-sm uppercase tracking-widest text-zinc-400 mb-3">Détails techniques</h3>
-                  <p className="text-sm text-zinc-400">
-                    <span className="text-zinc-300">Appareil</span> — {photo.technical.camera}
+                  <h3 className="text-sm uppercase tracking-widest text-zinc-600 mb-3">Détails techniques</h3>
+                  <p className="text-sm text-zinc-600">
+                    <span className="text-zinc-700">Appareil</span> — {photo.technical.camera}
                   </p>
-                  <p className="text-sm text-zinc-400">
-                    <span className="text-zinc-300">Objectif</span> — {photo.technical.lens}
+                  <p className="text-sm text-zinc-600">
+                    <span className="text-zinc-700">Objectif</span> — {photo.technical.lens}
                   </p>
-                  <p className="text-sm text-zinc-400">
-                    <span className="text-zinc-300">ISO</span> — {photo.technical.iso}
+                  <p className="text-sm text-zinc-600">
+                    <span className="text-zinc-700">ISO</span> — {photo.technical.iso}
                   </p>
                 </div>
               )}
@@ -593,10 +593,10 @@ const PhotoDetail = ({
 
           {navParts && (
             <div className="mb-6">
-              <p className="text-zinc-400 text-sm font-light tracking-widest mb-2">{navigationInfo}</p>
-              <div className="w-full max-w-[200px] h-px bg-zinc-800 rounded-full overflow-hidden">
+              <p className="text-zinc-600 text-sm font-light tracking-widest mb-2">{navigationInfo}</p>
+              <div className="w-full max-w-[200px] h-px bg-zinc-200 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-zinc-500"
+                  className="h-full bg-zinc-600"
                   initial={false}
                   animate={{ width: `${(navParts[0] / navParts[1]) * 100}%` }}
                   transition={spring.snappy}
@@ -607,7 +607,7 @@ const PhotoDetail = ({
 
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm mb-4 self-start"
+            className="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-900 transition-colors text-sm mb-4 self-start"
           >
             {shareStatus === 'copied' ? (
               <>
@@ -623,8 +623,8 @@ const PhotoDetail = ({
           </button>
 
           {photo.purchasePrice && (
-            <p className="text-sm text-zinc-400 mb-3">
-              Tirages à partir de <span className="text-zinc-100">{photo.purchasePrice} €</span>
+            <p className="text-sm text-zinc-600 mb-3">
+              Tirages à partir de <span className="text-zinc-900">{photo.purchasePrice} €</span>
             </p>
           )}
 

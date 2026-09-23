@@ -9,7 +9,7 @@ import { InstagramLogo } from '@phosphor-icons/react';
 const About = () => {
   return (
     <section
-      className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950 text-zinc-100">
+      className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-white text-zinc-900">
       <div className="max-w-[1400px] mx-auto">
         <h1
           className="text-4xl md:text-6xl tracking-tighter leading-none mb-10 md:mb-16 font-light">
@@ -35,22 +35,22 @@ const About = () => {
           >
             <h2 className="text-3xl md:text-4xl tracking-tighter font-light mb-6">ROD</h2>
             <div className="space-y-4 max-w-[65ch]">
-              <p className="text-base text-zinc-400 leading-relaxed">
+              <p className="text-base text-zinc-600 leading-relaxed">
                 Je suis ROD, un photographe breton de 25 ans passionné par la capture de moments simples, la nature, et les couleurs uniques du film argentique.
               </p>
-              <p className="text-base text-zinc-400 leading-relaxed">
+              <p className="text-base text-zinc-600 leading-relaxed">
                 {"Mon approche photographique se concentre sur la beauté du quotidien, les paysages naturels et l'authenticité des instants capturés. J'aime particulièrement travailler avec la photographie argentique pour sa richesse de tons et son caractère inimitable."}
               </p>
-              <p className="text-base text-zinc-400 leading-relaxed">
+              <p className="text-base text-zinc-600 leading-relaxed">
                 {"Je réalise également des photos de surf, capturant l'énergie des vagues et la passion des surfeurs en action."}
               </p>
-              <p className="text-base text-zinc-400 leading-relaxed">
+              <p className="text-base text-zinc-600 leading-relaxed">
                 {"Je propose mes photos à la vente et je réalise également des séances photo de style lifestyle pour vos futures campagnes. N'hésitez pas à me contacter pour discuter de vos projets ou pour acquérir mes œuvres."}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-4 mt-10">
-              <Link href="/contact" className="btn-light">
+              <Link href="/contact" className="btn-solid">
                 Me contacter
               </Link>
 

@@ -1,6 +1,6 @@
 export default function GalleryLoading() {
   return (
-    <section className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-zinc-950">
+    <section className="min-h-[100dvh] w-full pt-24 pb-16 px-4 md:px-10 bg-white">
       <div className="max-w-[1400px] mx-auto">
         <div className="skeleton h-12 w-48 mb-8 md:mb-12 rounded-lg" />
         <div className="flex gap-2 md:gap-3 mb-10">

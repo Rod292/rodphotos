@@ -44,7 +44,7 @@ const Header = () => {
   const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   const headerBg = (scrolled || isMenuOpen || !isHome)
-    ? 'bg-zinc-950/90 backdrop-blur-md shadow-xs'
+    ? 'bg-white/90 backdrop-blur-md shadow-xs'
     : 'bg-transparent';
 
   return (
@@ -53,7 +53,7 @@ const Header = () => {
     >
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-4 flex justify-between items-center">
         <Link href="/" aria-label="ROD - Accueil">
-          <span className="text-2xl tracking-tight font-light text-zinc-100">
+          <span className="text-2xl tracking-tight font-light text-zinc-900">
             ROD
           </span>
         </Link>
@@ -65,13 +65,13 @@ const Header = () => {
               <Link key={item.href} href={item.href} aria-current={active ? 'page' : undefined}>
                 <span
                   className={`relative text-sm tracking-wide transition-colors ${
-                    active ? 'text-zinc-100' : 'text-zinc-400 hover:text-zinc-100'
+                    active ? 'text-zinc-900' : 'text-zinc-600 hover:text-zinc-900'
                   }`}
                 >
                   {item.label}
                   {active && (
                     <motion.span
-                      className="absolute -bottom-1 left-0 right-0 h-px bg-zinc-400"
+                      className="absolute -bottom-1 left-0 right-0 h-px bg-zinc-900"
                       layoutId="nav-underline"
                       transition={spring.snappy}
                     />
@@ -83,7 +83,7 @@ const Header = () => {
         </nav>
 
         <button
-          className="md:hidden flex flex-col justify-center items-center w-11 h-11 -mr-2 text-zinc-100"
+          className="md:hidden flex flex-col justify-center items-center w-11 h-11 -mr-2 text-zinc-900"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           aria-expanded={isMenuOpen}
@@ -103,7 +103,7 @@ const Header = () => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.nav
-            className="md:hidden absolute top-full left-0 w-full bg-zinc-950/95 backdrop-blur-md"
+            className="md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -120,7 +120,7 @@ const Header = () => {
                 >
                   <Link href={item.href} onClick={closeMenu} aria-current={isActive(item.href) ? 'page' : undefined}>
                     <span className={`block py-2 text-lg font-light tracking-wide transition-colors ${
-                      isActive(item.href) ? 'text-zinc-100' : 'text-zinc-400'
+                      isActive(item.href) ? 'text-zinc-900' : 'text-zinc-600'
                     }`}>
                       {item.label}
                     </span>
