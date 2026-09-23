@@ -76,6 +76,13 @@ const Gallery = ({ initialFilter = 'all' }) => {
 
   const selectedImage = selectedIndex !== null ? filteredImages[selectedIndex] : null;
 
+  // Vignette masquée tant que sa photo est dans la visionneuse (y compris pendant le
+  // retour) : la photo revient se poser dans un emplacement vide
+  const [hiddenPhotoId, setHiddenPhotoId] = useState(null);
+  if (selectedImage && hiddenPhotoId !== selectedImage.id) {
+    setHiddenPhotoId(selectedImage.id);
+  }
+
   const changeFilter = useCallback((id) => {
     setFilter(id);
     const url = id === 'all' || id === 'favorites' ? '/gallery' : `/gallery/${id}`;
@@ -134,6 +141,19 @@ const Gallery = ({ initialFilter = 'all' }) => {
       prev !== null ? (prev - 1 + filteredImages.length) % filteredImages.length : null
     );
   }, [filteredImages.length]);
+
+  // En naviguant dans la visionneuse, la grille défile en arrière-plan pour garder la
+  // vignette de la photo affichée à l'écran : la fermeture peut toujours y revenir
+  useEffect(() => {
+    if (!selectedImage) return;
+    const el = thumbnailRefs.current[selectedImage.id];
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const margin = 80;
+    if (rect.top < margin || rect.bottom > window.innerHeight - margin) {
+      window.scrollBy({ top: rect.top + rect.height / 2 - window.innerHeight / 2, behavior: 'instant' });
+    }
+  }, [selectedImage]);
 
   const count = filteredImages.length;
   const prevPhoto = selectedIndex !== null ? filteredImages[(selectedIndex - 1 + count) % count] : null;
@@ -235,7 +255,7 @@ const Gallery = ({ initialFilter = 'all' }) => {
                 <motion.div
                   key={image.id}
                   ref={(el) => { thumbnailRefs.current[image.id] = el; }}
-                  className="absolute rounded-lg overflow-hidden group"
+                  className={`absolute rounded-lg overflow-hidden group ${hiddenPhotoId === image.id ? 'invisible' : ''}`}
                   style={{
                     ...masonry.positions[index],
                     backgroundImage: image.blurDataURL ? `url(${image.blurDataURL})` : undefined,
@@ -313,7 +333,7 @@ const Gallery = ({ initialFilter = 'all' }) => {
         )}
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence onExitComplete={() => setHiddenPhotoId(null)}>
         {selectedImage && (
           <PhotoDetail
             photo={selectedImage}

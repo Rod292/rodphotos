@@ -250,9 +250,9 @@ const PhotoDetail = ({
     if (isPresent) return;
     const thumb = getThumbnailRect?.(photo.id);
     const animations = [
-      animate(presence, 0, fade.base),
+      animate(presence, 0, { duration: 0.4, ease: [0.16, 1, 0.3, 1] }),
       animate(chromeOpacity, 0, fade.fast),
-      animate(dragY, 0, spring.smooth),
+      animate(dragY, 0, spring.gentle),
       animate(zoom.scale, 1, spring.smooth),
       animate(zoom.panX, 0, spring.smooth),
       animate(zoom.panY, 0, spring.smooth),
@@ -260,11 +260,11 @@ const PhotoDetail = ({
     if (!prefersReducedMotion && thumb && boxRef.current && stageRef.current && isInViewport(thumb)) {
       const to = getThumbnailTransform(thumb, boxRef.current, stageRef.current);
       animations.push(
-        animate(flipX, to.x, spring.smooth),
-        animate(flipY, to.y, spring.smooth),
-        animate(flipScale, to.scale, spring.smooth),
-        animate(flipRotate, to.rotate, spring.smooth),
-        animate(radius, to.radius, spring.smooth),
+        animate(flipX, to.x, spring.gentle),
+        animate(flipY, to.y, spring.gentle),
+        animate(flipScale, to.scale, spring.gentle),
+        animate(flipRotate, to.rotate, spring.gentle),
+        animate(radius, to.radius, spring.gentle),
       );
     } else {
       animations.push(animate(flipOpacity, 0, fade.fast));

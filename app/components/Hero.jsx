@@ -55,6 +55,11 @@ const Hero = () => {
 
   const [hasInitiallyAnimated, setHasInitiallyAnimated] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  // Carte masquée tant que sa photo est dans la visionneuse (y compris pendant le retour)
+  const [hiddenPhotoId, setHiddenPhotoId] = useState(null);
+  if (selectedPhoto && hiddenPhotoId !== selectedPhoto.id) {
+    setHiddenPhotoId(selectedPhoto.id);
+  }
 
   // Auto-rotation via requestAnimationFrame (disabled when prefers-reduced-motion)
   useEffect(() => {
@@ -229,9 +234,9 @@ const Hero = () => {
               aria-label={`Voir « ${photos[index].title} »`}
               className="group absolute cursor-pointer p-0 rounded-lg"
               initial={{ opacity: 0 }}
-              animate={{ opacity: selectedPhoto?.id === photos[index].id ? 0 : 1 }}
+              animate={{ opacity: 1 }}
               transition={{
-                duration: prefersReducedMotion ? 0 : (selectedPhoto?.id === photos[index].id ? 0 : (hasInitiallyAnimated ? 0.3 : 0.8)),
+                duration: prefersReducedMotion ? 0 : (hasInitiallyAnimated ? 0.3 : 0.8),
                 delay: prefersReducedMotion ? 0 : (hasInitiallyAnimated ? 0 : index * 0.05),
               }}
               style={{
@@ -241,6 +246,7 @@ const Hero = () => {
                 top: positions[index]?.y || 0,
                 transform: `translate(-50%, -50%) rotate(${positions[index]?.rotation || 0}deg)`,
                 zIndex: positions[index]?.zIndex || 0,
+                visibility: hiddenPhotoId === photos[index].id ? 'hidden' : 'visible',
               }}
               onClick={() => handlePhotoClick(index)}
             >
@@ -293,7 +299,7 @@ const Hero = () => {
 
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence onExitComplete={() => setHiddenPhotoId(null)}>
         {selectedPhoto && (
           <PhotoDetail photo={selectedPhoto} getThumbnailRect={getThumbnailRect} onClose={handleCloseDetail} />
         )}
