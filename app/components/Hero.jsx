@@ -232,7 +232,7 @@ const Hero = () => {
               key={image}
               ref={(el) => { thumbnailRefs.current[index] = el; }}
               aria-label={`Voir « ${photos[index].title} »`}
-              className="group absolute cursor-pointer p-0 rounded-lg"
+              className="group absolute cursor-pointer p-0 rounded-lg focus-visible:outline-none"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{
@@ -250,7 +250,7 @@ const Hero = () => {
               }}
               onClick={() => handlePhotoClick(index)}
             >
-              <div className="w-full h-full relative rounded-lg shadow-lg shadow-black/15 overflow-hidden transition-[translate,scale,box-shadow] duration-300 ease-out group-hover:-translate-y-3 group-hover:scale-[1.03] group-hover:shadow-2xl group-hover:shadow-black/25 group-focus-visible:-translate-y-3">
+              <div className="w-full h-full relative rounded-lg shadow-lg shadow-black/15 overflow-hidden transition-[translate,scale,box-shadow] duration-300 ease-out group-hover:-translate-y-3 group-hover:scale-[1.03] group-hover:shadow-2xl group-hover:shadow-black/25 group-focus-visible:-translate-y-3 group-focus-visible:ring-2 group-focus-visible:ring-zinc-900/70 group-focus-visible:ring-offset-2">
                 <Image
                   src={image}
                   alt={photos[index].alt}

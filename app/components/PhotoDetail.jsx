@@ -248,28 +248,40 @@ const PhotoDetail = ({
   // retourne dans sa vignette, puis le composant est retiré
   useEffect(() => {
     if (isPresent) return;
-    const thumb = getThumbnailRect?.(photo.id);
-    const animations = [
-      animate(presence, 0, { duration: 0.4, ease: [0.16, 1, 0.3, 1] }),
-      animate(chromeOpacity, 0, fade.fast),
-      animate(dragY, 0, spring.gentle),
-      animate(zoom.scale, 1, spring.smooth),
-      animate(zoom.panX, 0, spring.smooth),
-      animate(zoom.panY, 0, spring.smooth),
-    ];
-    if (!prefersReducedMotion && thumb && boxRef.current && stageRef.current && isInViewport(thumb)) {
-      const to = getThumbnailTransform(thumb, boxRef.current, stageRef.current);
-      animations.push(
-        animate(flipX, to.x, spring.gentle),
-        animate(flipY, to.y, spring.gentle),
-        animate(flipScale, to.scale, spring.gentle),
-        animate(flipRotate, to.rotate, spring.gentle),
-        animate(radius, to.radius, spring.gentle),
-      );
-    } else {
-      animations.push(animate(flipOpacity, 0, fade.fast));
-    }
-    Promise.all(animations).then(safeToRemove);
+    animate(presence, 0, { duration: 0.4, ease: [0.16, 1, 0.3, 1] });
+    animate(chromeOpacity, 0, fade.fast);
+
+    // La position de la vignette est lue à l'image suivante : le re-rendu du parent
+    // qui vient de fermer la visionneuse peut laisser ses transformations
+    // (rotation du carrousel) momentanément non appliquées
+    let cancelled = false;
+    const frame = requestAnimationFrame(() => {
+      if (cancelled) return;
+      const thumb = getThumbnailRect?.(photo.id);
+      const animations = [
+        animate(dragY, 0, spring.gentle),
+        animate(zoom.scale, 1, spring.smooth),
+        animate(zoom.panX, 0, spring.smooth),
+        animate(zoom.panY, 0, spring.smooth),
+      ];
+      if (!prefersReducedMotion && thumb && boxRef.current && stageRef.current && isInViewport(thumb)) {
+        const to = getThumbnailTransform(thumb, boxRef.current, stageRef.current);
+        animations.push(
+          animate(flipX, to.x, spring.gentle),
+          animate(flipY, to.y, spring.gentle),
+          animate(flipScale, to.scale, spring.gentle),
+          animate(flipRotate, to.rotate, spring.gentle),
+          animate(radius, to.radius, spring.gentle),
+        );
+      } else {
+        animations.push(animate(flipOpacity, 0, fade.fast));
+      }
+      Promise.all(animations).then(() => { if (!cancelled) safeToRemove(); });
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPresent]);
 
