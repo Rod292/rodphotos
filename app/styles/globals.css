@@ -18,52 +18,57 @@ html, body {
   padding: 0;
 }
 
-/* Focus visible for keyboard navigation */
-:focus-visible {
-  outline: 2px solid rgba(24, 24, 27, 0.6);
-  outline-offset: 2px;
+/* Focus visible for keyboard navigation (couche base : les classes utilitaires
+   des composants peuvent le remplacer) */
+@layer base {
+  :focus-visible {
+    outline: 2px solid rgba(24, 24, 27, 0.6);
+    outline-offset: 2px;
+  }
 }
 
-/* Button styles */
-.btn-primary {
-  background-color: transparent;
-  color: rgb(24, 24, 27);
-  border: 1px solid rgba(24, 24, 27, 0.2);
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* Button styles (couche components : les classes utilitaires peuvent les ajuster) */
+@layer components {
+  .btn-primary {
+    background-color: transparent;
+    color: rgb(24, 24, 27);
+    border: 1px solid rgba(24, 24, 27, 0.2);
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-.btn-primary:hover {
-  background-color: rgb(24, 24, 27);
-  color: rgb(255, 255, 255);
-  border-color: rgb(24, 24, 27);
-}
+  .btn-primary:hover {
+    background-color: rgb(24, 24, 27);
+    color: rgb(255, 255, 255);
+    border-color: rgb(24, 24, 27);
+  }
 
-.btn-primary:active {
-  transform: scale(0.98) translateY(1px);
-}
+  .btn-primary:active {
+    transform: scale(0.98) translateY(1px);
+  }
 
-.btn-solid {
-  display: inline-block;
-  background-color: rgb(24, 24, 27);
-  color: rgb(255, 255, 255);
-  border: 1px solid rgb(24, 24, 27);
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+  .btn-solid {
+    display: inline-block;
+    background-color: rgb(24, 24, 27);
+    color: rgb(255, 255, 255);
+    border: 1px solid rgb(24, 24, 27);
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-.btn-solid:hover {
-  background-color: rgb(63, 63, 70);
-}
+  .btn-solid:hover {
+    background-color: rgb(63, 63, 70);
+  }
 
-.btn-solid:active {
-  transform: scale(0.98) translateY(1px);
+  .btn-solid:active {
+    transform: scale(0.98) translateY(1px);
+  }
 }
 
 /* Accroche de l'accueil */

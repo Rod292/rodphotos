@@ -5,6 +5,8 @@ import { motion, useMotionValue, useSpring, AnimatePresence, useReducedMotion } 
 import Image from 'next/image';
 import { photos } from '../data/photos';
 import PhotoDetail from './PhotoDetail';
+import { isKeyboardInput } from '../lib/inputModality';
+import { registerFireSource, wakeFire, smoothstep } from '../lib/fire';
 
 const images = photos.map(p => p.path);
 
@@ -32,6 +34,9 @@ const ROTATION_SPEED = 3; // degrees per second (360° / 120s)
 const PAN_SENSITIVITY = 0.3; // pixels to degrees ratio
 const WHEEL_SENSITIVITY = 0.1;
 const RESUME_DELAY = 1000; // ms before auto-rotation resumes
+// Vitesse de rotation (°/s) à partir de laquelle la roue fume, et où le feu est à son maximum
+const FIRE_MIN_SPEED = 90;
+const FIRE_MAX_SPEED = 650;
 
 const Hero = () => {
   const prefersReducedMotion = useReducedMotion();
@@ -74,6 +79,9 @@ const Hero = () => {
         rawAngle.set(rawAngle.get() + ROTATION_SPEED * delta);
       }
 
+      // La roue lancée à grande vitesse réveille l'effet de feu
+      if (Math.abs(smoothAngle.getVelocity()) > FIRE_MIN_SPEED) wakeFire();
+
       rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -81,7 +89,7 @@ const Hero = () => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [rawAngle, selectedPhoto, prefersReducedMotion]);
+  }, [rawAngle, smoothAngle, selectedPhoto, prefersReducedMotion]);
 
   // Wheel handler for desktop
   useEffect(() => {
@@ -146,11 +154,13 @@ const Hero = () => {
 
   const isMobile = windowSize.width < 768;
 
+  const wheelRadius = isMobile
+    ? windowSize.height * 0.7
+    : Math.min(windowSize.width, windowSize.height) * 0.65;
+
   const positions = useMemo(() => {
     const count = images.length;
-    const radius = isMobile
-      ? windowSize.height * 0.7
-      : Math.min(windowSize.width, windowSize.height) * 0.65;
+    const radius = wheelRadius;
 
     return images.map((_, i) => {
       const angle = (i / count) * 360;
@@ -170,10 +180,56 @@ const Hero = () => {
         zIndex: 100 - Math.floor(distFromTop * 100),
       };
     });
-  }, [windowSize, isMobile]);
+  }, [wheelRadius]);
 
   const cardWidth = Math.min(250, windowSize.width * (isMobile ? 0.55 : 0.2));
   const cardHeight = Math.min(isMobile ? 340 : 350, windowSize.width * (isMobile ? 0.75 : 0.25));
+
+  const wheelRef = useRef(null);
+
+  // La roue comme source de chaleur : flammes et fumée naissent sur l'anneau des cartes
+  // et restent en traînée derrière elles ; les étincelles partent dans le sens de rotation
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    let geometry = null;
+    return registerFireSource({
+      density: 2.5,
+      sample: () => {
+        const velocity = smoothAngle.getVelocity();
+        const intensity = smoothstep(FIRE_MIN_SPEED, FIRE_MAX_SPEED, Math.abs(velocity));
+        if (intensity > 0 && wheelRef.current) {
+          // Centre de la roue = origine (taille nulle) du conteneur qui tourne
+          const rect = wheelRef.current.getBoundingClientRect();
+          geometry = { cx: rect.left, cy: rect.top, omega: (velocity * Math.PI) / 180 };
+        }
+        return intensity;
+      },
+      spawn: (p, kind) => {
+        if (!geometry) return false;
+        // Bord extérieur des cartes : un anneau qui s'enflamme
+        const r = wheelRadius + (cardHeight / 2) * (0.8 + Math.random() * 0.3);
+        // Uniquement sur la partie de l'anneau au-dessus du bas de l'écran (y < innerHeight)
+        const k = Math.max(-1, Math.min(1, (geometry.cy - window.innerHeight) / r));
+        const range = Math.acos(k);
+        const theta = (Math.random() * 2 - 1) * range;
+        p.x = geometry.cx + Math.sin(theta) * r;
+        p.y = geometry.cy - Math.cos(theta) * r;
+        if (p.x < -40 || p.x > window.innerWidth + 40 || p.y < -40 || p.y > window.innerHeight + 40) return false;
+        // Tangente au cercle dans le sens horaire (angle CSS croissant)
+        const tx = Math.cos(theta);
+        const ty = Math.sin(theta);
+        const speed = geometry.omega * r;
+        if (kind === 'spark') {
+          p.vx = tx * speed * 0.55 + (Math.random() - 0.5) * 120;
+          p.vy = ty * speed * 0.55 - 150;
+        } else {
+          p.vx = -tx * speed * 0.12;
+          p.vy = -ty * speed * 0.12 - 40;
+        }
+        return true;
+      },
+    });
+  }, [prefersReducedMotion, smoothAngle, wheelRadius, cardHeight]);
 
   // Position et inclinaison actuelles de la carte : point de départ / d'arrivée de la visionneuse
   const getThumbnailRect = useCallback((photoId) => {
@@ -191,6 +247,25 @@ const Hero = () => {
     };
   }, [smoothAngle, positions, cardWidth, cardHeight]);
 
+  // Navigation au clavier : la roue tourne pour amener la carte qui reçoit le focus en
+  // haut, la plupart des cartes étant hors de l'écran. Ignoré pour un clic, qui donne
+  // aussi le focus au bouton mais ne doit pas déplacer la carte avant son ouverture.
+  const handleCardFocus = useCallback((index) => {
+    if (!isKeyboardInput()) return;
+    const target = -(positions[index]?.rotation || 0);
+    const current = rawAngle.get();
+    rawAngle.set(current + normalizeAngle(target - current));
+    isInteracting.current = true;
+    clearTimeout(resumeTimeout.current);
+  }, [positions, rawAngle]);
+
+  const handleCardBlur = useCallback(() => {
+    clearTimeout(resumeTimeout.current);
+    resumeTimeout.current = setTimeout(() => {
+      isInteracting.current = false;
+    }, RESUME_DELAY);
+  }, []);
+
   const handlePhotoClick = useCallback((index) => {
     if (didPan.current) return;
     setSelectedPhoto(photos[index]);
@@ -207,7 +282,7 @@ const Hero = () => {
 
   return (
     <motion.section
-      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-hidden bg-white touch-none cursor-grab active:cursor-grabbing"
+      className="min-h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-clip bg-white touch-none cursor-grab active:cursor-grabbing"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -216,8 +291,9 @@ const Hero = () => {
       onPan={handlePan}
       onPanEnd={handlePanEnd}
     >
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden" style={{ minHeight: '100dvh' }}>
+      <div className="relative w-full h-full flex items-center justify-center overflow-clip" style={{ minHeight: '100dvh' }}>
         <motion.div
+          ref={wheelRef}
           className="absolute bottom-0 left-1/2 -translate-x-1/2"
           style={{
             rotate: smoothAngle,
@@ -249,6 +325,8 @@ const Hero = () => {
                 visibility: hiddenPhotoId === photos[index].id ? 'hidden' : 'visible',
               }}
               onClick={() => handlePhotoClick(index)}
+              onFocus={() => handleCardFocus(index)}
+              onBlur={handleCardBlur}
             >
               <div className="w-full h-full relative rounded-lg shadow-lg shadow-black/15 overflow-hidden transition-[translate,scale,box-shadow] duration-300 ease-out group-hover:-translate-y-3 group-hover:scale-[1.03] group-hover:shadow-2xl group-hover:shadow-black/25 group-focus-visible:-translate-y-3 group-focus-visible:ring-2 group-focus-visible:ring-zinc-900/70 group-focus-visible:ring-offset-2">
                 <Image
@@ -267,14 +345,14 @@ const Hero = () => {
           ))}
         </motion.div>
 
-        {/* Dégradé pour la lisibilité de l'accroche (rendue par HeroLoader) */}
-        <div className="absolute bottom-0 left-0 right-0 h-72 bg-gradient-to-t from-white via-white/80 to-transparent z-30 pointer-events-none" />
+        {/* Fondu des cartes qui passent sous le bas de l'écran */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white via-white/70 to-transparent z-30 pointer-events-none" />
 
         {/* Swipe hint — mobile only */}
         {isMobile && (
           <motion.div
             className="absolute z-40 flex items-center gap-3 text-zinc-600"
-            style={{ bottom: 'calc(5% + 190px)' }}
+            style={{ bottom: 'calc(16% + 88px)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 1, 0] }}
             transition={{ duration: 8, delay: 1.5, times: [0, 0.05, 0.85, 1] }}

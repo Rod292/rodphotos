@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { X, CaretLeft, CaretRight, ShareNetwork, Check, Play, Pause } from '@phosphor-icons/react';
 import FavoriteButton from './FavoriteButton';
 import { spring, fade } from '../lib/motion';
+import { isKeyboardInput } from '../lib/inputModality';
 
 const SWIPE_OFFSET = 80;
 const SWIPE_VELOCITY = 400;
@@ -326,15 +327,17 @@ const PhotoDetail = ({
     return () => clearTimeout(timeout);
   }, [isPlaying, onNext, navigate, photo.id]);
 
-  // Focus + page figée derrière la visionneuse
+  // Focus + page figée derrière la visionneuse. Le focus n'est rendu à la vignette que
+  // si la visionneuse a été ouverte au clavier : après un clic, le rendre afficherait
+  // un contour de focus clavier inutile sur la vignette
   useEffect(() => {
-    previouslyFocusedRef.current = document.activeElement;
+    previouslyFocusedRef.current = isKeyboardInput() ? document.activeElement : null;
     const timer = setTimeout(() => closeButtonRef.current?.focus(), 100);
     document.body.style.overflow = 'hidden';
     return () => {
       clearTimeout(timer);
       document.body.style.overflow = '';
-      previouslyFocusedRef.current?.focus();
+      previouslyFocusedRef.current?.focus({ preventScroll: true });
     };
   }, []);
 

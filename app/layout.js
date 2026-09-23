@@ -4,6 +4,7 @@ import './styles/globals.css';
 import Header from './components/Header';
 import ConditionalFooter from './components/ConditionalFooter';
 import MotionProvider from './components/MotionProvider';
+import FireCanvas from './components/FireCanvas';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -67,6 +68,7 @@ export default function RootLayout({ children }) {
           <Header />
           <main id="main-content">{children}</main>
           <ConditionalFooter />
+          <FireCanvas />
         </MotionProvider>
         <Analytics />
         <script

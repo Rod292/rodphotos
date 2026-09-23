@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { ArrowRight } from '@phosphor-icons/react';
 
 const Hero = dynamic(() => import('./Hero'), {
   ssr: false,
@@ -11,18 +12,20 @@ const Hero = dynamic(() => import('./Hero'), {
 export default function HeroLoader() {
   return (
     <div className="relative">
+      {/* Titre de la page pour le référencement et les lecteurs d'écran, non affiché */}
+      <h1 className="sr-only">ROD — Photographe en Bretagne</h1>
+
       <Hero />
 
-      {/* Accroche rendue côté serveur : visible avant le chargement du carrousel et indexable */}
-      <div className="hero-intro absolute inset-x-0 bottom-[5%] md:bottom-8 z-40 flex flex-col items-center text-center px-6 pointer-events-none">
-        <h1 className="text-2xl md:text-4xl font-light tracking-tight text-zinc-900">
-          Photographe en Bretagne
-        </h1>
-        <p className="mt-2 mb-6 text-sm md:text-base text-zinc-600 tracking-wide">
-          Surf · Paysages · Street · Voyage — numérique &amp; argentique
-        </p>
-        <Link href="/gallery" className="btn-solid pointer-events-auto">
-          Découvrir la galerie
+      {/* Rendu côté serveur : visible avant le chargement du carrousel. Placé au centre
+          de l'espace libre sous l'arc des cartes. */}
+      <div className="hero-intro absolute inset-x-0 bottom-[16%] md:bottom-[22%] z-40 flex justify-center pointer-events-none">
+        <Link
+          href="/gallery"
+          className="group btn-solid inline-flex items-center gap-2.5 px-7 py-3.5 text-base pointer-events-auto shadow-lg shadow-black/15"
+        >
+          Galerie
+          <ArrowRight size={18} weight="bold" className="transition-transform duration-300 ease-out group-hover:translate-x-1" />
         </Link>
       </div>
     </div>
